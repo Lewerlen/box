@@ -22,6 +22,26 @@ def get_db_connection():
         )
     return conn
 
+def migrate_participant_table(cur):
+    """Добавляет недостающие колонки в таблицу participant."""
+    try:
+        cur.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'participant'
+        """)
+        existing_columns = {row[0] for row in cur.fetchall()}
+
+        if 'competition_id' not in existing_columns:
+            print("  -> Добавление колонки competition_id в participant...")
+            cur.execute("""
+                ALTER TABLE participant 
+                ADD COLUMN competition_id INTEGER REFERENCES competitions(id) ON DELETE SET NULL
+            """)
+    except Exception as e:
+        print(f"  -> Предупреждение при миграции participant: {e}")
+
+
 def migrate_age_category_table(cur):
     """Добавляет недостающие колонки в таблицу age_category, если они отсутствуют."""
     try:
@@ -241,8 +261,9 @@ def create_tables():
                     # Другая ошибка - выводим предупреждение
                     print(f"  -> Предупреждение при создании таблицы: {e}")
         
-        # Миграция для age_category (добавление недостающих колонок)
+        # Миграции для существующих таблиц
         migrate_age_category_table(cur)
+        migrate_participant_table(cur)
         
         cur.close()
         conn.commit()
@@ -391,6 +412,7 @@ def save_participant_data(participant_data: dict, tgid_who_added: int) -> str:
                 "rank_title": participant_data.get("rank_name"),
                 "rank_assigned_on": participant_data.get("rank_assigned_on"),
                 "order_number": participant_data.get("order_number"),
+                "competition_id": participant_data.get("competition_id"),
             }
 
             if existing_participant:

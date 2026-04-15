@@ -42,22 +42,19 @@ def _row_to_dict(row):
     }
 
 
-def _get_total_participants(cur) -> int:
-    cur.execute("SELECT COUNT(*) FROM participant")
-    row = cur.fetchone()
-    return row[0] if row else 0
-
-
 @router.get("")
 def list_competitions():
     conn = get_db_connection()
     try:
         cur = conn.cursor()
-        total = _get_total_participants(cur)
         cur.execute("""
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
-                   c.location, c.status, c.created_at
+                   c.location, c.status, c.created_at,
+                   COUNT(p.id) AS participants_count
             FROM competitions c
+            LEFT JOIN participant p ON p.competition_id = c.id
+            GROUP BY c.id, c.name, c.discipline, c.date_start, c.date_end,
+                     c.location, c.status, c.created_at
             ORDER BY
                 CASE c.status
                     WHEN 'active' THEN 1
@@ -68,13 +65,7 @@ def list_competitions():
                 c.date_start DESC
         """)
         rows = cur.fetchall()
-        result = []
-        for r in rows:
-            d = _row_to_dict(r)
-            if d["status"] == "active":
-                d["participants_count"] = total
-            result.append(d)
-        return result
+        return [_row_to_dict(r) for r in rows]
     finally:
         conn.close()
 
@@ -86,17 +77,18 @@ def get_competition(competition_id: int):
         cur = conn.cursor()
         cur.execute("""
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
-                   c.location, c.status, c.created_at
+                   c.location, c.status, c.created_at,
+                   COUNT(p.id) AS participants_count
             FROM competitions c
+            LEFT JOIN participant p ON p.competition_id = c.id
             WHERE c.id = %s
+            GROUP BY c.id, c.name, c.discipline, c.date_start, c.date_end,
+                     c.location, c.status, c.created_at
         """, (competition_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Соревнование не найдено")
-        d = _row_to_dict(row)
-        if d["status"] == "active":
-            d["participants_count"] = _get_total_participants(cur)
-        return d
+        return _row_to_dict(row)
     finally:
         conn.close()
 

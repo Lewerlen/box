@@ -31,6 +31,7 @@ interface ParticipantFilters {
   class_id?: number | string;
   club_id?: number | string;
   region_id?: number | string;
+  competition_id?: number | string;
 }
 
 interface RegistrationData {
@@ -47,6 +48,7 @@ interface RegistrationData {
   city_name: string;
   club_name: string;
   coach_name: string;
+  competition_id?: number | null;
 }
 
 interface BracketParams {

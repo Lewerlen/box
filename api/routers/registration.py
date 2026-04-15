@@ -33,6 +33,7 @@ class RegistrationData(BaseModel):
     city_name: str
     club_name: str
     coach_name: str
+    competition_id: Optional[int] = None
 
 
 @router.get("/age-categories")
@@ -117,6 +118,7 @@ def submit_registration(data: RegistrationData):
             "club_name": data.club_name,
             "coach_name": data.coach_name,
             "weight_category_id": data.weight_category_id,
+            "competition_id": data.competition_id,
         }
 
         status = save_participant_data(participant_data, tgid_who_added=0)

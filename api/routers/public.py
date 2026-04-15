@@ -37,6 +37,7 @@ def list_participants(
     class_id: Optional[int] = None,
     club_id: Optional[int] = None,
     region_id: Optional[int] = None,
+    competition_id: Optional[int] = None,
 ):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -67,6 +68,9 @@ def list_participants(
     if region_id:
         where_clauses.append("p.region_id = %s")
         params.append(region_id)
+    if competition_id:
+        where_clauses.append("p.competition_id = %s")
+        params.append(competition_id)
 
     where_sql = " AND ".join(where_clauses)
     if where_sql:

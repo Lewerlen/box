@@ -252,6 +252,7 @@ export default function RegistrationPage() {
         city_name: finalCity,
         club_name: finalClub,
         coach_name: finalCoach,
+        competition_id: competitionId ? Number(competitionId) : null,
       })
       const status = res.data.status
       if (status === 'created') {

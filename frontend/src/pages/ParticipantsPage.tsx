@@ -71,13 +71,14 @@ export default function ParticipantsPage() {
     if (classId) params.class_id = classId
     if (clubId) params.club_id = clubId
     if (regionId) params.region_id = regionId
+    if (competitionId) params.competition_id = competitionId
     publicApi.getParticipants(params).then((r) => {
       setParticipants(r.data.participants)
       setTotal(r.data.total)
       setTotalPages(r.data.total_pages)
       setLoading(false)
     })
-  }, [page, search, gender, ageCategoryId, weightCategoryId, classId, clubId, regionId])
+  }, [page, search, gender, ageCategoryId, weightCategoryId, classId, clubId, regionId, competitionId])
 
   useEffect(() => { load() }, [load])
 
