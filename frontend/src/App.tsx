@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminParticipants from './pages/admin/AdminParticipants'
 import AdminBrackets from './pages/admin/AdminBrackets'
+import AdminReferences from './pages/admin/AdminReferences'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/participants" element={<AdminParticipants />} />
           <Route path="/admin/brackets" element={<AdminBrackets />} />
+          <Route path="/admin/references" element={<AdminReferences />} />
         </Route>
       </Route>
     </Routes>

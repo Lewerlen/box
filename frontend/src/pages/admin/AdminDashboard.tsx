@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { publicApi, adminApi } from '../../api'
-import { Users, Trophy, FileSpreadsheet, Download, Loader2 } from 'lucide-react'
+import { Users, Trophy, FileSpreadsheet, Download, Loader2, BookOpen } from 'lucide-react'
 
 interface TournamentStats {
   total_participants: number
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+      <div className="grid md:grid-cols-3 gap-4 mb-8">
         <Link to="/admin/participants" className="bg-surface-light rounded-xl border border-border p-6 hover:border-primary/50 transition-colors no-underline group">
           <Users className="w-8 h-8 text-primary mb-3" />
           <h3 className="text-lg font-semibold text-text">Управление участниками</h3>
@@ -60,6 +60,11 @@ export default function AdminDashboard() {
           <Trophy className="w-8 h-8 text-accent mb-3" />
           <h3 className="text-lg font-semibold text-text">Управление сетками</h3>
           <p className="text-text-muted text-sm mt-1">Генерация, swap, утверждение сеток</p>
+        </Link>
+        <Link to="/admin/references" className="bg-surface-light rounded-xl border border-border p-6 hover:border-success/50 transition-colors no-underline group">
+          <BookOpen className="w-8 h-8 text-success mb-3" />
+          <h3 className="text-lg font-semibold text-text">Справочники</h3>
+          <p className="text-text-muted text-sm mt-1">Регионы, города, клубы, тренеры</p>
         </Link>
       </div>
 

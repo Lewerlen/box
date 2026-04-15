@@ -19,6 +19,7 @@ api/                    # FastAPI backend
     public.py          # Public endpoints (participants, brackets, refs, stats)
     registration.py    # Multi-step registration wizard API
     admin.py           # Admin CRUD, CSV import, Excel downloads, brackets
+    admin_references.py # Admin reference data CRUD + merge (regions, cities, clubs, coaches)
 frontend/              # React + Vite frontend
   src/
     api.ts             # Axios client with JWT interceptors
@@ -34,6 +35,7 @@ frontend/              # React + Vite frontend
       AdminDashboard.tsx   # Admin overview, Excel downloads
       AdminParticipants.tsx # Admin CRUD, CSV import
       AdminBrackets.tsx    # Bracket management (swap, approve, regenerate)
+      AdminReferences.tsx  # Reference data management (hierarchical CRUD + merge)
 db/                    # Database layer (psycopg2, sync)
   database.py          # All DB functions
   init_db.py           # Schema creation and reference data seeding

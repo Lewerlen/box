@@ -45,6 +45,7 @@ export default function Layout() {
     { to: '/admin', label: 'Панель' },
     { to: '/admin/participants', label: 'Участники' },
     { to: '/admin/brackets', label: 'Сетки' },
+    { to: '/admin/references', label: 'Справочники' },
   ]
 
   const isActive = (path: string) => location.pathname === path

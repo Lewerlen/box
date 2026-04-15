@@ -152,4 +152,12 @@ export const adminApi = {
       return URL.createObjectURL(new Blob([res.data]))
     })
   },
+  getRefRegions: () => api.get('/admin/references/regions'),
+  getRefCities: (regionId: number) => api.get('/admin/references/cities', { params: { region_id: regionId } }),
+  getRefClubs: (cityId: number) => api.get('/admin/references/clubs', { params: { city_id: cityId } }),
+  getRefCoaches: (clubId: number) => api.get('/admin/references/coaches', { params: { club_id: clubId } }),
+  createRef: (type: string, name: string, parentId?: number) => api.post(`/admin/references/${type}`, { name, parent_id: parentId }),
+  renameRef: (type: string, id: number, name: string) => api.put(`/admin/references/${type}/${id}`, { name }),
+  deleteRef: (type: string, id: number) => api.delete(`/admin/references/${type}/${id}`),
+  mergeRef: (type: string, id: number, targetId: number) => api.post(`/admin/references/${type}/${id}/merge`, { target_id: targetId }),
 };
