@@ -8,3 +8,9 @@ openpyxl
 Pillow
 psycopg2-binary
 python-dotenv
+aiofiles
+fastapi
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+uvicorn[standard]

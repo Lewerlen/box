@@ -752,6 +752,7 @@ def get_participants_for_bracket(age_category_id: int, weight_category_id: int, 
     cur = conn.cursor()
     query = """
                 SELECT
+                    p.id,
                     p.fio,
                     cl.name as club_name,
                     ci.name as city_name,
@@ -764,7 +765,7 @@ def get_participants_for_bracket(age_category_id: int, weight_category_id: int, 
                 ORDER BY p.fio;
             """
     cur.execute(query, (age_category_id, weight_category_id, class_id))
-    columns = ["fio", "club_name", "city_name", "class_name"]
+    columns = ["id", "fio", "club_name", "city_name", "class_name"]
     participants = [dict(zip(columns, row)) for row in cur.fetchall()]
     cur.close()
     conn.close()
