@@ -38,6 +38,20 @@ def migrate_participant_table(cur):
                 ALTER TABLE participant 
                 ADD COLUMN competition_id INTEGER REFERENCES competitions(id) ON DELETE SET NULL
             """)
+
+        cur.execute("""
+            SELECT constraint_name FROM information_schema.table_constraints
+            WHERE table_name = 'participant' AND constraint_type = 'UNIQUE'
+              AND constraint_name = 'participant_fio_dob_key'
+        """)
+        if cur.fetchone():
+            print("  -> Обновление уникального ограничения participant: (fio, dob) -> (fio, dob, competition_id)...")
+            cur.execute("ALTER TABLE participant DROP CONSTRAINT participant_fio_dob_key")
+            cur.execute("""
+                ALTER TABLE participant
+                ADD CONSTRAINT participant_fio_dob_competition_unique
+                UNIQUE NULLS NOT DISTINCT (fio, dob, competition_id)
+            """)
     except Exception as e:
         print(f"  -> Предупреждение при миграции participant: {e}")
 
@@ -441,11 +455,18 @@ def save_participant_data(participant_data: dict, tgid_who_added: int) -> str:
                         participant_data["coach_id"] = cur.fetchone()[0]
 
 
-            # --- Проверка существования участника ---
-            cur.execute(
-                "SELECT id FROM participant WHERE fio = %s AND dob = %s",
-                (participant_data["fio"], participant_data["dob"]),
-            )
+            # --- Проверка существования участника (с учётом соревнования) ---
+            competition_id = participant_data.get("competition_id")
+            if competition_id is not None:
+                cur.execute(
+                    "SELECT id FROM participant WHERE fio = %s AND dob = %s AND competition_id = %s",
+                    (participant_data["fio"], participant_data["dob"], competition_id),
+                )
+            else:
+                cur.execute(
+                    "SELECT id FROM participant WHERE fio = %s AND dob = %s AND competition_id IS NULL",
+                    (participant_data["fio"], participant_data["dob"]),
+                )
             existing_participant = cur.fetchone()
 
             fields = {
