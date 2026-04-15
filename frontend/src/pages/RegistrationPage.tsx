@@ -259,7 +259,8 @@ export default function RegistrationPage() {
         <div className="bg-danger/10 border border-danger/30 text-danger rounded-lg px-4 py-3 mb-4 text-sm">{error}</div>
       )}
 
-      <div className="bg-surface rounded-xl border border-border-light p-6 shadow-sm">
+      <div className="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
+        <div className="p-6">
 
         {step === 1 && (
           <div>
@@ -295,30 +296,36 @@ export default function RegistrationPage() {
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div>
                 <label className="block text-xs text-text-muted mb-1.5">День</label>
-                <select value={dobDay} onChange={(e) => setDobDay(parseInt(e.target.value))}
-                  className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 cursor-pointer">
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
+                <div className="reg-select-wrap">
+                  <select value={dobDay} onChange={(e) => setDobDay(parseInt(e.target.value))}
+                    className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1.5">Месяц</label>
-                <select value={dobMonth} onChange={(e) => setDobMonth(parseInt(e.target.value))}
-                  className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 cursor-pointer">
-                  {MONTHS.map((m, i) => (
-                    <option key={i + 1} value={i + 1}>{m}</option>
-                  ))}
-                </select>
+                <div className="reg-select-wrap">
+                  <select value={dobMonth} onChange={(e) => setDobMonth(parseInt(e.target.value))}
+                    className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
+                    {MONTHS.map((m, i) => (
+                      <option key={i + 1} value={i + 1}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1.5">Год</label>
-                <select value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
-                  className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 cursor-pointer">
-                  {Array.from({ length: 41 }, (_, i) => 1970 - i).map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
+                <div className="reg-select-wrap">
+                  <select value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
+                    className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
+                    {Array.from({ length: 41 }, (_, i) => 1970 - i).map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
             <button onClick={handleDobSubmit}
@@ -692,16 +699,17 @@ export default function RegistrationPage() {
             </div>
           </div>
         )}
-      </div>
-
-      {step > 1 && step < 14 && (
-        <div className="mt-4">
-          <button onClick={goBack}
-            className="flex items-center gap-2 text-text-muted hover:text-text text-sm cursor-pointer bg-transparent border-none transition-colors">
-            <ChevronLeft className="w-4 h-4" /> Назад
-          </button>
         </div>
-      )}
+
+        {step > 1 && step < 14 && (
+          <div className="border-t border-border-light px-6 py-3">
+            <button onClick={goBack}
+              className="flex items-center gap-1.5 text-text-muted hover:text-primary text-sm cursor-pointer bg-transparent border-none transition-colors font-medium">
+              <ChevronLeft className="w-4 h-4" /> Назад
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
