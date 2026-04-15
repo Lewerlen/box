@@ -45,28 +45,28 @@ body {
 }
 
 html.dark {
-  --color-primary: #3b6ba5;
-  --color-primary-dark: #2a5082;
-  --color-primary-light: #5585bc;
+  --color-primary: #4a7fc1;
+  --color-primary-dark: #3b6ba5;
+  --color-primary-light: #6096d6;
   --color-accent: #d4a843;
   --color-accent-dark: #c8962e;
-  --color-surface: #1e2a3c;
-  --color-surface-light: #111827;
-  --color-surface-lighter: #253448;
-  --color-border: #2d3a4e;
-  --color-border-light: #253244;
-  --color-text: #e8ecf2;
-  --color-text-secondary: #a0aec0;
-  --color-text-muted: #6b7a90;
+  --color-surface: #1a2840;
+  --color-surface-light: #0f1e30;
+  --color-surface-lighter: #223354;
+  --color-border: #2e4060;
+  --color-border-light: #263855;
+  --color-text: #ddeaf8;
+  --color-text-secondary: #91adc8;
+  --color-text-muted: #5a7a96;
   --color-success: #34c47a;
   --color-danger: #f05252;
-  --color-nav: #0d1824;
-  --color-nav-dark: #090f18;
-  --color-nav-text: #d8e8f6;
-  --color-nav-text-muted: #8aaccc;
-  --color-nav-text-dim: #4f728a;
+  --color-nav: #0a1628;
+  --color-nav-dark: #070e1c;
+  --color-nav-text: #d8eaff;
+  --color-nav-text-muted: #82aace;
+  --color-nav-text-dim: #4a6a88;
   --color-nav-active: #1e3a58;
-  --color-nav-divider: #162232;
+  --color-nav-divider: #1a2e48;
   --color-male: #60a5fa;
   --color-female: #f472b6;
 }
