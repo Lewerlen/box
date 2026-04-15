@@ -480,7 +480,7 @@ export default function RegistrationPage() {
             </label>
             {!manualMode.region ? (
               <>
-                <div className="space-y-2 max-h-64 overflow-y-auto mb-3">
+                <div className="space-y-2 mb-3">
                   {regions.map((r) => (
                     <button key={r.id} onClick={() => {
                       setRegionId(r.id); setRegionName(r.name); setManualRegion('')
@@ -536,7 +536,7 @@ export default function RegistrationPage() {
             {regionId && !manualMode.city ? (
               <>
                 {cities.length > 0 && (
-                  <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
+                  <div className="space-y-2 mb-3">
                     {cities.map((c) => (
                       <button key={c.id} onClick={() => {
                         setCityId(c.id); setCityName(c.name); setManualCity('')
@@ -592,7 +592,7 @@ export default function RegistrationPage() {
             {cityId && !manualMode.club ? (
               <>
                 {clubs.length > 0 && (
-                  <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
+                  <div className="space-y-2 mb-3">
                     {clubs.map((c) => (
                       <button key={c.id} onClick={() => {
                         setClubId(c.id); setClubName(c.name); setManualClub('')
@@ -644,7 +644,7 @@ export default function RegistrationPage() {
             </label>
             {clubId && coaches.length > 0 && !manualMode.coach ? (
               <>
-                <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
+                <div className="space-y-2 mb-3">
                   {coaches.map((c) => (
                     <button key={c.id} onClick={() => { setCoachName(c.name); setManualCoach(''); setStep(14) }}
                       className={`w-full py-3 px-4 rounded-lg border text-left text-sm font-medium cursor-pointer transition-all ${coachName === c.name ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-surface-light hover:border-primary/30 text-text'}`}>
