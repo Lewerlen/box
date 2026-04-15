@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { competitionsApi } from '../../api'
+import api, { competitionsApi } from '../../api'
 import { Plus, Pencil, Trash2, Loader2, X, Check } from 'lucide-react'
 
 interface Competition {
@@ -65,7 +65,7 @@ export default function AdminCompetitions() {
   const [error, setError] = useState('')
 
   const load = () => {
-    competitionsApi.getAll()
+    api.get('/admin/competitions')
       .then((r) => setCompetitions(r.data))
       .catch(() => {})
       .finally(() => setLoading(false))
