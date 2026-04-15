@@ -1,6 +1,58 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { registrationApi } from '../api'
-import { CheckCircle, ChevronLeft, Loader2, X, SkipForward } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronDown, Loader2, X, SkipForward } from 'lucide-react'
+
+interface CustomSelectProps {
+  value: number
+  onChange: (val: number) => void
+  options: { value: number; label: string }[]
+}
+
+function CustomSelect({ value, onChange, options }: CustomSelectProps) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    if (open) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  useEffect(() => {
+    if (open && listRef.current) {
+      const selected = listRef.current.querySelector('[data-selected="true"]') as HTMLElement
+      if (selected) selected.scrollIntoView({ block: 'center' })
+    }
+  }, [open])
+
+  const selected = options.find(o => o.value === value)
+
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text flex items-center justify-between focus:outline-none focus:border-primary/50 cursor-pointer transition-colors hover:border-primary/40">
+        <span className="font-medium">{selected?.label ?? value}</span>
+        <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div ref={listRef}
+          className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-xl overflow-y-auto"
+          style={{ maxHeight: '200px', scrollbarWidth: 'thin', scrollbarColor: 'var(--color-border) var(--color-surface-light)' }}>
+          {options.map(o => (
+            <button key={o.value} type="button" data-selected={o.value === value}
+              onClick={() => { onChange(o.value); setOpen(false) }}
+              className={`w-full px-4 py-2.5 text-left text-sm cursor-pointer border-none transition-colors ${o.value === value ? 'bg-primary/15 text-primary font-semibold' : 'bg-transparent text-text hover:bg-surface-lighter'}`}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface RefItem { id: number; name: string }
 
@@ -299,36 +351,18 @@ export default function RegistrationPage() {
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div>
                 <label className="block text-xs text-text-muted mb-1.5">День</label>
-                <div className="reg-select-wrap">
-                  <select value={dobDay} onChange={(e) => setDobDay(parseInt(e.target.value))}
-                    className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect value={dobDay} onChange={setDobDay}
+                  options={Array.from({ length: 31 }, (_, i) => ({ value: i + 1, label: String(i + 1) }))} />
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1.5">Месяц</label>
-                <div className="reg-select-wrap">
-                  <select value={dobMonth} onChange={(e) => setDobMonth(parseInt(e.target.value))}
-                    className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
-                    {MONTHS.map((m, i) => (
-                      <option key={i + 1} value={i + 1}>{m}</option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect value={dobMonth} onChange={setDobMonth}
+                  options={MONTHS.map((m, i) => ({ value: i + 1, label: m }))} />
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1.5">Год</label>
-                <div className="reg-select-wrap">
-                  <select value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
-                    className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
-                    {Array.from({ length: 55 }, (_, i) => 2024 - i).map((y) => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect value={dobYear} onChange={setDobYear}
+                  options={Array.from({ length: 55 }, (_, i) => ({ value: 2024 - i, label: String(2024 - i) }))} />
               </div>
             </div>
             {ageCategoryName && (
