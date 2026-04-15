@@ -53,7 +53,7 @@ export default function RegistrationPage() {
   const [gender, setGender] = useState('')
   const [dobDay, setDobDay] = useState(1)
   const [dobMonth, setDobMonth] = useState(1)
-  const [dobYear, setDobYear] = useState(1970)
+  const [dobYear, setDobYear] = useState(2000)
   const [dobIso, setDobIso] = useState('')
   const [dobDisplay, setDobDisplay] = useState('')
   const [ageCategoryId, setAgeCategoryId] = useState<number | null>(null)
@@ -165,7 +165,7 @@ export default function RegistrationPage() {
 
   const resetForm = () => {
     setStep(1)
-    setFio(''); setGender(''); setDobDay(1); setDobMonth(1); setDobYear(1970); setDobIso(''); setDobDisplay('')
+    setFio(''); setGender(''); setDobDay(1); setDobMonth(1); setDobYear(2000); setDobIso(''); setDobDisplay('')
     setAgeCategoryId(null); setAgeCategoryName(''); setWeightCategoryId(null); setWeightCategoryName('')
     setClassName(''); setRankName(''); setRankDateInput(''); setRankDateIso(''); setRankDateDisplay('')
     setOrderNumber(''); setRegionId(null); setRegionName(''); setCityId(null); setCityName('')
@@ -321,7 +321,7 @@ export default function RegistrationPage() {
                 <div className="reg-select-wrap">
                   <select value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
                     className="reg-select w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50">
-                    {Array.from({ length: 41 }, (_, i) => 1970 - i).map((y) => (
+                    {Array.from({ length: 55 }, (_, i) => 2024 - i).map((y) => (
                       <option key={y} value={y}>{y}</option>
                     ))}
                   </select>
