@@ -25,12 +25,6 @@ const TOTAL_STEPS = 14
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
 
-function sliderStyle(value: number, min: number, max: number) {
-  const pct = ((value - min) / (max - min)) * 100
-  return {
-    background: `linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ${pct}%, var(--color-border) ${pct}%, var(--color-border) 100%)`
-  }
-}
 
 function parseDateInput(input: string): { valid: boolean; iso: string; display: string } {
   const cleaned = input.trim().replace(/-/g, '.')
@@ -296,54 +290,41 @@ export default function RegistrationPage() {
         )}
 
         {step === 3 && (
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-text-secondary">День</label>
-                <input
-                  type="number" min={1} max={31} value={dobDay}
-                  onChange={(e) => setDobDay(Math.min(31, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="w-16 px-2 py-1 text-center bg-surface-light border border-border rounded-lg text-text font-bold text-lg focus:outline-none focus:border-primary/50"
-                />
+          <div>
+            <label className="block text-sm text-text-secondary mb-4">Дата рождения</label>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div>
+                <label className="block text-xs text-text-muted mb-1.5">День</label>
+                <select value={dobDay} onChange={(e) => setDobDay(parseInt(e.target.value))}
+                  className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 cursor-pointer">
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
               </div>
-              <input type="range" min={1} max={31} value={dobDay} onChange={(e) => setDobDay(parseInt(e.target.value))}
-                className="dob-slider" style={sliderStyle(dobDay, 1, 31)} />
-              <div className="flex justify-between text-xs text-text-muted mt-1"><span>1</span><span>31</span></div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-text-secondary">Месяц</label>
-                <span className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-primary font-medium text-sm">{MONTHS[dobMonth - 1]}</span>
+              <div>
+                <label className="block text-xs text-text-muted mb-1.5">Месяц</label>
+                <select value={dobMonth} onChange={(e) => setDobMonth(parseInt(e.target.value))}
+                  className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 cursor-pointer">
+                  {MONTHS.map((m, i) => (
+                    <option key={i + 1} value={i + 1}>{m}</option>
+                  ))}
+                </select>
               </div>
-              <input type="range" min={1} max={12} value={dobMonth} onChange={(e) => setDobMonth(parseInt(e.target.value))}
-                className="dob-slider" style={sliderStyle(dobMonth, 1, 12)} />
-              <div className="flex justify-between text-xs text-text-muted mt-1"><span>Янв</span><span>Дек</span></div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-text-secondary">Год</label>
-                <input
-                  type="number" min={1930} max={2022} value={dobYear}
-                  onChange={(e) => setDobYear(Math.min(2022, Math.max(1930, parseInt(e.target.value) || 2000)))}
-                  className="w-24 px-2 py-1 text-center bg-surface-light border border-border rounded-lg text-text font-bold text-lg focus:outline-none focus:border-primary/50"
-                />
+              <div>
+                <label className="block text-xs text-text-muted mb-1.5">Год</label>
+                <select value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
+                  className="w-full px-3 py-3 bg-surface-light border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 cursor-pointer">
+                  {Array.from({ length: 93 }, (_, i) => 2022 - i).map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
               </div>
-              <input type="range" min={1930} max={2022} value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
-                className="dob-slider" style={sliderStyle(dobYear, 1930, 2022)} />
-              <div className="flex justify-between text-xs text-text-muted mt-1"><span>1930</span><span>2022</span></div>
             </div>
-
-            <div className="pt-2 border-t border-border-light">
-              <p className="text-center text-text-secondary text-sm mb-4">
-                Дата: <span className="font-bold text-text text-base">{String(dobDay).padStart(2,'0')}.{String(dobMonth).padStart(2,'0')}.{dobYear}</span>
-              </p>
-              <button onClick={handleDobSubmit}
-                className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
-                Далее
-              </button>
-            </div>
+            <button onClick={handleDobSubmit}
+              className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
+              Далее
+            </button>
           </div>
         )}
 
