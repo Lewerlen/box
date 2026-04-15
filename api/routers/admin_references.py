@@ -21,6 +21,15 @@ class MergeRequest(BaseModel):
     target_id: int
 
 
+def _validate_name(name: str):
+    stripped = name.strip()
+    if not stripped:
+        raise HTTPException(status_code=400, detail="Название не может быть пустым")
+    if len(stripped) > 200:
+        raise HTTPException(status_code=400, detail="Название слишком длинное (макс. 200 символов)")
+    return stripped
+
+
 def _close(cur, conn, invalidate_cache=False):
     cur.close()
     conn.close()
@@ -46,32 +55,34 @@ def list_regions(admin: str = Depends(get_current_admin)):
 
 @router.post("/regions")
 def create_region(data: CreateRequest, admin: str = Depends(get_current_admin)):
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM region WHERE name = %s", (data.name.strip(),))
+    cur.execute("SELECT id FROM region WHERE name = %s", (name,))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Регион с таким названием уже существует")
-    cur.execute("INSERT INTO region (name) VALUES (%s) RETURNING id", (data.name.strip(),))
+    cur.execute("INSERT INTO region (name) VALUES (%s) RETURNING id", (name,))
     new_id = cur.fetchone()[0]
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
-    return {"id": new_id, "name": data.name.strip()}
+    return {"id": new_id, "name": name}
 
 
 @router.put("/regions/{region_id}")
 def rename_region(region_id: int, data: RenameRequest, admin: str = Depends(get_current_admin)):
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id FROM region WHERE id = %s", (region_id,))
     if not cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=404, detail="Регион не найден")
-    cur.execute("SELECT id FROM region WHERE name = %s AND id != %s", (data.name.strip(), region_id))
+    cur.execute("SELECT id FROM region WHERE name = %s AND id != %s", (name, region_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Регион с таким названием уже существует")
-    cur.execute("UPDATE region SET name = %s WHERE id = %s", (data.name.strip(), region_id))
+    cur.execute("UPDATE region SET name = %s WHERE id = %s", (name, region_id))
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
@@ -144,21 +155,27 @@ def list_cities(region_id: int = Query(...), admin: str = Depends(get_current_ad
 def create_city(data: CreateRequest, admin: str = Depends(get_current_admin)):
     if not data.parent_id:
         raise HTTPException(status_code=400, detail="Укажите region_id")
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM city WHERE name = %s AND region_id = %s", (data.name.strip(), data.parent_id))
+    cur.execute("SELECT id FROM region WHERE id = %s", (data.parent_id,))
+    if not cur.fetchone():
+        _close(cur, conn)
+        raise HTTPException(status_code=404, detail="Регион не найден")
+    cur.execute("SELECT id FROM city WHERE name = %s AND region_id = %s", (name, data.parent_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Город с таким названием уже существует в этом регионе")
-    cur.execute("INSERT INTO city (name, region_id) VALUES (%s, %s) RETURNING id", (data.name.strip(), data.parent_id))
+    cur.execute("INSERT INTO city (name, region_id) VALUES (%s, %s) RETURNING id", (name, data.parent_id))
     new_id = cur.fetchone()[0]
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
-    return {"id": new_id, "name": data.name.strip()}
+    return {"id": new_id, "name": name}
 
 
 @router.put("/cities/{city_id}")
 def rename_city(city_id: int, data: RenameRequest, admin: str = Depends(get_current_admin)):
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT region_id FROM city WHERE id = %s", (city_id,))
@@ -166,11 +183,11 @@ def rename_city(city_id: int, data: RenameRequest, admin: str = Depends(get_curr
     if not row:
         _close(cur, conn)
         raise HTTPException(status_code=404, detail="Город не найден")
-    cur.execute("SELECT id FROM city WHERE name = %s AND region_id = %s AND id != %s", (data.name.strip(), row[0], city_id))
+    cur.execute("SELECT id FROM city WHERE name = %s AND region_id = %s AND id != %s", (name, row[0], city_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Город с таким названием уже существует в этом регионе")
-    cur.execute("UPDATE city SET name = %s WHERE id = %s", (data.name.strip(), city_id))
+    cur.execute("UPDATE city SET name = %s WHERE id = %s", (name, city_id))
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
@@ -247,21 +264,27 @@ def list_clubs(city_id: int = Query(...), admin: str = Depends(get_current_admin
 def create_club(data: CreateRequest, admin: str = Depends(get_current_admin)):
     if not data.parent_id:
         raise HTTPException(status_code=400, detail="Укажите city_id")
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM club WHERE name = %s AND city_id = %s", (data.name.strip(), data.parent_id))
+    cur.execute("SELECT id FROM city WHERE id = %s", (data.parent_id,))
+    if not cur.fetchone():
+        _close(cur, conn)
+        raise HTTPException(status_code=404, detail="Город не найден")
+    cur.execute("SELECT id FROM club WHERE name = %s AND city_id = %s", (name, data.parent_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Клуб с таким названием уже существует в этом городе")
-    cur.execute("INSERT INTO club (name, city_id) VALUES (%s, %s) RETURNING id", (data.name.strip(), data.parent_id))
+    cur.execute("INSERT INTO club (name, city_id) VALUES (%s, %s) RETURNING id", (name, data.parent_id))
     new_id = cur.fetchone()[0]
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
-    return {"id": new_id, "name": data.name.strip()}
+    return {"id": new_id, "name": name}
 
 
 @router.put("/clubs/{club_id}")
 def rename_club(club_id: int, data: RenameRequest, admin: str = Depends(get_current_admin)):
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT city_id FROM club WHERE id = %s", (club_id,))
@@ -269,11 +292,11 @@ def rename_club(club_id: int, data: RenameRequest, admin: str = Depends(get_curr
     if not row:
         _close(cur, conn)
         raise HTTPException(status_code=404, detail="Клуб не найден")
-    cur.execute("SELECT id FROM club WHERE name = %s AND city_id = %s AND id != %s", (data.name.strip(), row[0], club_id))
+    cur.execute("SELECT id FROM club WHERE name = %s AND city_id = %s AND id != %s", (name, row[0], club_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Клуб с таким названием уже существует в этом городе")
-    cur.execute("UPDATE club SET name = %s WHERE id = %s", (data.name.strip(), club_id))
+    cur.execute("UPDATE club SET name = %s WHERE id = %s", (name, club_id))
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
@@ -349,21 +372,27 @@ def list_coaches(club_id: int = Query(...), admin: str = Depends(get_current_adm
 def create_coach(data: CreateRequest, admin: str = Depends(get_current_admin)):
     if not data.parent_id:
         raise HTTPException(status_code=400, detail="Укажите club_id")
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM coach WHERE name = %s AND club_id = %s", (data.name.strip(), data.parent_id))
+    cur.execute("SELECT id FROM club WHERE id = %s", (data.parent_id,))
+    if not cur.fetchone():
+        _close(cur, conn)
+        raise HTTPException(status_code=404, detail="Клуб не найден")
+    cur.execute("SELECT id FROM coach WHERE name = %s AND club_id = %s", (name, data.parent_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Тренер с таким именем уже существует в этом клубе")
-    cur.execute("INSERT INTO coach (name, club_id) VALUES (%s, %s) RETURNING id", (data.name.strip(), data.parent_id))
+    cur.execute("INSERT INTO coach (name, club_id) VALUES (%s, %s) RETURNING id", (name, data.parent_id))
     new_id = cur.fetchone()[0]
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
-    return {"id": new_id, "name": data.name.strip()}
+    return {"id": new_id, "name": name}
 
 
 @router.put("/coaches/{coach_id}")
 def rename_coach(coach_id: int, data: RenameRequest, admin: str = Depends(get_current_admin)):
+    name = _validate_name(data.name)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT club_id FROM coach WHERE id = %s", (coach_id,))
@@ -371,11 +400,11 @@ def rename_coach(coach_id: int, data: RenameRequest, admin: str = Depends(get_cu
     if not row:
         _close(cur, conn)
         raise HTTPException(status_code=404, detail="Тренер не найден")
-    cur.execute("SELECT id FROM coach WHERE name = %s AND club_id = %s AND id != %s", (data.name.strip(), row[0], coach_id))
+    cur.execute("SELECT id FROM coach WHERE name = %s AND club_id = %s AND id != %s", (name, row[0], coach_id))
     if cur.fetchone():
         _close(cur, conn)
         raise HTTPException(status_code=400, detail="Тренер с таким именем уже существует в этом клубе")
-    cur.execute("UPDATE coach SET name = %s WHERE id = %s", (data.name.strip(), coach_id))
+    cur.execute("UPDATE coach SET name = %s WHERE id = %s", (name, coach_id))
     conn.commit()
     _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
