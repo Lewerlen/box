@@ -233,9 +233,12 @@ async def import_csv(file: UploadFile = File(...), admin: str = Depends(get_curr
 
 
 @router.get("/brackets/categories")
-def get_bracket_categories(admin: str = Depends(get_current_admin)):
-    participants = get_participants_for_approval()
-    approved_statuses = get_approved_statuses()
+def get_bracket_categories(
+    competition_id: Optional[int] = None,
+    admin: str = Depends(get_current_admin),
+):
+    participants = get_participants_for_approval(competition_id=competition_id)
+    approved_statuses = get_approved_statuses(competition_id=competition_id)
 
     grouped = defaultdict(list)
     for p in participants:

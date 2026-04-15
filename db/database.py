@@ -994,10 +994,15 @@ def get_weight_categories_with_participants_by_class(age_category_id: int, class
 
 
 
-def get_participants_for_approval():
+def get_participants_for_approval(competition_id: int = None):
     conn = get_db_connection()
     cur = conn.cursor()
-    query = """
+    where = "p.age_category_id IS NOT NULL AND p.weight_category_id IS NOT NULL AND p.class_id IS NOT NULL"
+    params = []
+    if competition_id is not None:
+        where += " AND p.competition_id = %s"
+        params.append(competition_id)
+    query = f"""
             SELECT
                 p.id,
                 p.fio,
@@ -1020,12 +1025,10 @@ def get_participants_for_approval():
             LEFT JOIN club cl ON p.club_id = cl.id
             LEFT JOIN city ci ON p.city_id = ci.id
             LEFT JOIN coach co ON p.coach_id = co.id
-            WHERE p.age_category_id IS NOT NULL
-              AND p.weight_category_id IS NOT NULL
-              AND p.class_id IS NOT NULL
+            WHERE {where}
             ORDER BY p.gender ASC, c.id DESC, ac.max_year DESC, wc.weight ASC, p.fio;
         """
-    cur.execute(query)
+    cur.execute(query, params)
     columns = [
         "id",
         "fio", "gender", "dob", "age_category_id", "age_category_name",
