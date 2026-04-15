@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { registrationApi } from '../api'
+import { registrationApi, competitionsApi } from '../api'
 import { CheckCircle, ChevronLeft, ChevronDown, Loader2, X, SkipForward } from 'lucide-react'
 
 interface CustomSelectProps {
@@ -95,6 +95,12 @@ function parseDateInput(input: string): { valid: boolean; iso: string; display: 
   return { valid: true, iso, display }
 }
 
+interface Competition {
+  id: number
+  name: string
+  status: string
+}
+
 export default function RegistrationPage() {
   const { id: competitionId } = useParams<{ id?: string }>()
   const [step, setStep] = useState(1)
@@ -102,6 +108,8 @@ export default function RegistrationPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [cancelled, setCancelled] = useState(false)
+  const [competitions, setCompetitions] = useState<Competition[]>([])
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<number | null>(null)
 
   const [fio, setFio] = useState('')
   const [gender, setGender] = useState('')
@@ -143,6 +151,15 @@ export default function RegistrationPage() {
   const [coaches, setCoaches] = useState<RefItem[]>([])
 
   const [skippedSteps, setSkippedSteps] = useState<Set<number>>(new Set([4]))
+
+  useEffect(() => {
+    if (!competitionId) {
+      competitionsApi.getAll().then((r) => {
+        const active = (r.data as Competition[]).filter(c => c.status === 'active' || c.status === 'upcoming')
+        setCompetitions(active)
+      }).catch(() => {})
+    }
+  }, [competitionId])
 
   useEffect(() => {
     if (step === 5 && ageCategoryId) {
@@ -233,6 +250,10 @@ export default function RegistrationPage() {
   }
 
   const handleSubmit = async () => {
+    if (!competitionId && !selectedCompetitionId && competitions.length > 0) {
+      setError('Выберите соревнование перед отправкой')
+      return
+    }
     setSubmitting(true)
     setError('')
     try {
@@ -252,7 +273,7 @@ export default function RegistrationPage() {
         city_name: finalCity,
         club_name: finalClub,
         coach_name: finalCoach,
-        competition_id: competitionId ? Number(competitionId) : null,
+        competition_id: competitionId ? Number(competitionId) : selectedCompetitionId,
       })
       const status = res.data.status
       if (status === 'created') {
@@ -312,6 +333,25 @@ export default function RegistrationPage() {
         </Link>
       )}
       <h1 className="text-2xl font-bold mb-2 text-text">Регистрация участника</h1>
+
+      {!competitionId && competitions.length > 0 && (
+        <div className="mb-6 p-4 bg-surface-light border border-border rounded-xl">
+          <label className="block text-sm font-medium text-text mb-2">
+            Соревнование <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={selectedCompetitionId ?? ''}
+            onChange={e => setSelectedCompetitionId(e.target.value ? Number(e.target.value) : null)}
+            className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
+          >
+            <option value="">— Выберите соревнование —</option>
+            {competitions.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <p className="text-text-muted text-sm mb-6">
         Шаг {progressIndex + 1} из {progressTotal}: {STEP_LABELS[step]}
       </p>

@@ -42,6 +42,55 @@ def migrate_participant_table(cur):
         print(f"  -> Предупреждение при миграции participant: {e}")
 
 
+def migrate_bracket_tables(cur):
+    """Добавляет competition_id в таблицы approved_grids и custom_brackets."""
+    try:
+        cur.execute("""
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'approved_grids'
+        """)
+        ag_cols = {row[0] for row in cur.fetchall()}
+
+        if 'competition_id' not in ag_cols:
+            print("  -> Добавление competition_id в approved_grids...")
+            cur.execute("ALTER TABLE approved_grids DROP CONSTRAINT approved_grids_pkey")
+            cur.execute("ALTER TABLE approved_grids ADD COLUMN ag_id SERIAL")
+            cur.execute("ALTER TABLE approved_grids ADD PRIMARY KEY (ag_id)")
+            cur.execute("""
+                ALTER TABLE approved_grids
+                ADD COLUMN competition_id INTEGER REFERENCES competitions(id) ON DELETE CASCADE
+            """)
+            cur.execute("""
+                ALTER TABLE approved_grids
+                ADD CONSTRAINT approved_grids_comp_unique
+                UNIQUE NULLS NOT DISTINCT (competition_id, class_name, gender, age_category_name, weight_name)
+            """)
+
+        cur.execute("""
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'custom_brackets'
+        """)
+        cb_cols = {row[0] for row in cur.fetchall()}
+
+        if 'competition_id' not in cb_cols:
+            print("  -> Добавление competition_id в custom_brackets...")
+            cur.execute("""
+                ALTER TABLE custom_brackets
+                DROP CONSTRAINT custom_brackets_class_name_gender_age_category_name_weight__key
+            """)
+            cur.execute("""
+                ALTER TABLE custom_brackets
+                ADD COLUMN competition_id INTEGER REFERENCES competitions(id) ON DELETE CASCADE
+            """)
+            cur.execute("""
+                ALTER TABLE custom_brackets
+                ADD CONSTRAINT custom_brackets_comp_unique
+                UNIQUE NULLS NOT DISTINCT (competition_id, class_name, gender, age_category_name, weight_name)
+            """)
+    except Exception as e:
+        print(f"  -> Предупреждение при миграции bracket таблиц: {e}")
+
+
 def migrate_age_category_table(cur):
     """Добавляет недостающие колонки в таблицу age_category, если они отсутствуют."""
     try:
@@ -264,6 +313,7 @@ def create_tables():
         # Миграции для существующих таблиц
         migrate_age_category_table(cur)
         migrate_participant_table(cur)
+        migrate_bracket_tables(cur)
         
         cur.close()
         conn.commit()
@@ -780,11 +830,16 @@ def get_all_participants_for_report():
     conn.close()
     return participants
 
-def get_participants_for_bracket(age_category_id: int, weight_category_id: int, class_id: int):
+def get_participants_for_bracket(age_category_id: int, weight_category_id: int, class_id: int, competition_id: int = None):
     """Возвращает список участников (fio, club_name) для конкретной категории."""
     conn = get_db_connection()
     cur = conn.cursor()
-    query = """
+    where = "p.age_category_id = %s AND p.weight_category_id = %s AND p.class_id = %s"
+    params = [age_category_id, weight_category_id, class_id]
+    if competition_id is not None:
+        where += " AND p.competition_id = %s"
+        params.append(competition_id)
+    query = f"""
                 SELECT
                     p.id,
                     p.fio,
@@ -795,10 +850,10 @@ def get_participants_for_bracket(age_category_id: int, weight_category_id: int, 
                 LEFT JOIN club cl ON p.club_id = cl.id
                 LEFT JOIN city ci ON p.city_id = ci.id
                 LEFT JOIN class c ON p.class_id = c.id
-                WHERE p.age_category_id = %s AND p.weight_category_id = %s AND p.class_id = %s
+                WHERE {where}
                 ORDER BY p.fio;
             """
-    cur.execute(query, (age_category_id, weight_category_id, class_id))
+    cur.execute(query, params)
     columns = ["id", "fio", "club_name", "city_name", "class_name"]
     participants = [dict(zip(columns, row)) for row in cur.fetchall()]
     cur.close()
@@ -961,40 +1016,46 @@ def get_participants_for_approval():
     conn.close()
     return participants
 
-def get_approved_statuses() -> set:
+def get_approved_statuses(competition_id: int = None) -> set:
     """Возвращает множество кортежей с ключами утвержденных сеток."""
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT class_name, gender, age_category_name, weight_name FROM approved_grids")
+            if competition_id is not None:
+                cur.execute(
+                    "SELECT class_name, gender, age_category_name, weight_name FROM approved_grids WHERE competition_id = %s",
+                    (competition_id,)
+                )
+            else:
+                cur.execute("SELECT class_name, gender, age_category_name, weight_name FROM approved_grids")
             return set(cur.fetchall())
     finally:
         if conn:
             conn.close()
 
 
-def update_approval_status(category_key: tuple, is_approved: bool):
+def update_approval_status(category_key: tuple, is_approved: bool, competition_id: int = None):
     """Обновляет статус утверждения для конкретной сетки в БД."""
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
+            class_name, gender, age_category_name, weight_name = category_key
             if is_approved:
-                # Вставляем, игнорируя конфликт, если запись уже существует
                 cur.execute(
                     """
-                    INSERT INTO approved_grids (class_name, gender, age_category_name, weight_name)
-                    VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING
+                    INSERT INTO approved_grids (competition_id, class_name, gender, age_category_name, weight_name)
+                    VALUES (%s, %s, %s, %s, %s) ON CONFLICT ON CONSTRAINT approved_grids_comp_unique DO NOTHING
                     """,
-                    category_key
+                    (competition_id, class_name, gender, age_category_name, weight_name)
                 )
             else:
-                # Удаляем, если утверждение снято
                 cur.execute(
                     """
                     DELETE FROM approved_grids
                     WHERE class_name = %s AND gender = %s AND age_category_name = %s AND weight_name = %s
+                    AND (competition_id = %s OR (competition_id IS NULL AND %s IS NULL))
                     """,
-                    category_key
+                    (class_name, gender, age_category_name, weight_name, competition_id, competition_id)
                 )
             conn.commit()
     except Exception as e:
@@ -1006,7 +1067,7 @@ def update_approval_status(category_key: tuple, is_approved: bool):
 
 
 
-def save_custom_bracket_order(category_key: tuple, participant_ids: list[int]):
+def save_custom_bracket_order(category_key: tuple, participant_ids: list[int], competition_id: int = None):
     """
     Сохраняет или обновляет порядок ID участников для заданной категории в таблице custom_brackets.
     """
@@ -1016,14 +1077,14 @@ def save_custom_bracket_order(category_key: tuple, participant_ids: list[int]):
             class_name, gender, age_category_name, weight_name = category_key
             cur.execute(
                 """
-                INSERT INTO custom_brackets (class_name, gender, age_category_name, weight_name, participant_ids, last_updated_at)
-                VALUES (%s, %s, %s, %s, %s, NOW())
-                ON CONFLICT (class_name, gender, age_category_name, weight_name)
+                INSERT INTO custom_brackets (competition_id, class_name, gender, age_category_name, weight_name, participant_ids, last_updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                ON CONFLICT ON CONSTRAINT custom_brackets_comp_unique
                 DO UPDATE SET
                     participant_ids = EXCLUDED.participant_ids,
                     last_updated_at = NOW();
                 """,
-                (class_name, gender, age_category_name, weight_name, participant_ids)
+                (competition_id, class_name, gender, age_category_name, weight_name, participant_ids)
             )
             conn.commit()
     except Exception as e:
@@ -1033,7 +1094,7 @@ def save_custom_bracket_order(category_key: tuple, participant_ids: list[int]):
         if conn:
             conn.close()
 
-def get_custom_bracket_order(category_key: tuple) -> list[int] | None:
+def get_custom_bracket_order(category_key: tuple, competition_id: int = None) -> list[int] | None:
     """
     Извлекает сохраненный порядок ID участников для категории.
     Возвращает список ID или None, если запись не найдена.
@@ -1046,13 +1107,14 @@ def get_custom_bracket_order(category_key: tuple) -> list[int] | None:
             cur.execute(
                 """
                 SELECT participant_ids FROM custom_brackets
-                WHERE class_name = %s AND gender = %s AND age_category_name = %s AND weight_name = %s;
+                WHERE class_name = %s AND gender = %s AND age_category_name = %s AND weight_name = %s
+                AND (competition_id = %s OR (competition_id IS NULL AND %s IS NULL));
                 """,
-                (class_name, gender, age_category_name, weight_name)
+                (class_name, gender, age_category_name, weight_name, competition_id, competition_id)
             )
             result = cur.fetchone()
             if result:
-                participant_ids = result[0] # participant_ids это массив INTEGER[]
+                participant_ids = result[0]
     except Exception as e:
         print(f"Ошибка при получении пользовательского порядка сетки: {e}")
     finally:
@@ -1060,7 +1122,7 @@ def get_custom_bracket_order(category_key: tuple) -> list[int] | None:
             conn.close()
     return participant_ids
 
-def delete_custom_bracket_order(category_key: tuple):
+def delete_custom_bracket_order(category_key: tuple, competition_id: int = None):
     """
     Удаляет запись о пользовательском порядке для категории.
     """
@@ -1071,9 +1133,10 @@ def delete_custom_bracket_order(category_key: tuple):
             cur.execute(
                 """
                 DELETE FROM custom_brackets
-                WHERE class_name = %s AND gender = %s AND age_category_name = %s AND weight_name = %s;
+                WHERE class_name = %s AND gender = %s AND age_category_name = %s AND weight_name = %s
+                AND (competition_id = %s OR (competition_id IS NULL AND %s IS NULL));
                 """,
-                (class_name, gender, age_category_name, weight_name)
+                (class_name, gender, age_category_name, weight_name, competition_id, competition_id)
             )
             conn.commit()
     except Exception as e:

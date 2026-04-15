@@ -89,8 +89,17 @@ export const publicApi = {
   getCities: (regionId: number) => api.get('/public/references/cities', { params: { region_id: regionId } }),
   getClubs: (cityId?: number) => api.get('/public/references/clubs', { params: cityId ? { city_id: cityId } : {} }),
   getCoaches: (clubId: number) => api.get('/public/references/coaches', { params: { club_id: clubId } }),
-  getApprovedBrackets: () => api.get('/public/brackets/approved'),
-  getBracketImage: (params: Record<string, string>) => `/api/public/brackets/image?${new URLSearchParams(params)}`,
+  getApprovedBrackets: (competition_id?: number) => api.get('/public/brackets/approved', { params: competition_id !== undefined ? { competition_id } : {} }),
+  getBracketImage: (params: { class_name: string; gender: string; age_category_name: string; weight_name: string; competition_id?: number }) => {
+    const p: Record<string, string> = {
+      class_name: params.class_name,
+      gender: params.gender,
+      age_category_name: params.age_category_name,
+      weight_name: params.weight_name,
+    };
+    if (params.competition_id !== undefined) p.competition_id = String(params.competition_id);
+    return `/api/public/brackets/image?${new URLSearchParams(p)}`;
+  },
 };
 
 export const registrationApi = {

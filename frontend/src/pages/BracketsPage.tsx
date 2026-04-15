@@ -17,11 +17,11 @@ export default function BracketsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    publicApi.getApprovedBrackets().then((r) => {
+    publicApi.getApprovedBrackets(competitionId ? Number(competitionId) : undefined).then((r) => {
       setBrackets(r.data)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [])
+  }, [competitionId])
 
   const grouped: Record<string, ApprovedBracket[]> = {}
   brackets.forEach((b) => {
@@ -97,6 +97,7 @@ export default function BracketsPage() {
                 gender: selected.gender,
                 age_category_name: selected.age_category_name,
                 weight_name: selected.weight_name,
+                competition_id: competitionId ? Number(competitionId) : undefined,
               })}
               alt="Турнирная сетка"
               className="max-w-full"

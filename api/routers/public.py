@@ -184,8 +184,8 @@ def get_coaches(club_id: int):
 
 
 @router.get("/brackets/approved")
-def get_approved_brackets():
-    approved = get_approved_statuses()
+def get_approved_brackets(competition_id: Optional[int] = None):
+    approved = get_approved_statuses(competition_id=competition_id)
     result = []
     for item in approved:
         result.append({
@@ -203,9 +203,10 @@ def get_bracket_image(
     gender: str,
     age_category_name: str,
     weight_name: str,
+    competition_id: Optional[int] = None,
 ):
     category_key = (class_name, gender, age_category_name, weight_name)
-    approved_set = get_approved_statuses()
+    approved_set = get_approved_statuses(competition_id=competition_id)
     if category_key not in approved_set:
         raise HTTPException(status_code=403, detail="Эта сетка ещё не утверждена")
 
@@ -248,12 +249,12 @@ def get_bracket_image(
     cur.close()
     conn.close()
 
-    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id)
+    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id, competition_id=competition_id)
     if not participants:
         raise HTTPException(status_code=404, detail="Нет участников в этой категории")
 
     category_key = (class_name, gender, age_category_name, weight_name)
-    custom_order = get_custom_bracket_order(category_key)
+    custom_order = get_custom_bracket_order(category_key, competition_id=competition_id)
 
     if custom_order:
         conn2 = get_db_connection()

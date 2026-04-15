@@ -269,6 +269,7 @@ def get_bracket_detail(
     gender: str,
     age_category_name: str,
     weight_name: str,
+    competition_id: Optional[int] = None,
     admin: str = Depends(get_current_admin),
 ):
     conn = get_db_connection()
@@ -310,10 +311,10 @@ def get_bracket_detail(
     cur.close()
     conn.close()
 
-    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id)
+    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id, competition_id=competition_id)
     category_key = (class_name, gender, age_category_name, weight_name)
-    custom_order = get_custom_bracket_order(category_key)
-    is_approved = category_key in get_approved_statuses()
+    custom_order = get_custom_bracket_order(category_key, competition_id=competition_id)
+    is_approved = category_key in get_approved_statuses(competition_id=competition_id)
 
     if custom_order:
         conn2 = get_db_connection()
@@ -362,6 +363,7 @@ def swap_participants(
     weight_name: str,
     index_a: int,
     index_b: int,
+    competition_id: Optional[int] = None,
     admin: str = Depends(get_current_admin),
 ):
     category_key = (class_name, gender, age_category_name, weight_name)
@@ -402,8 +404,8 @@ def swap_participants(
     cur.close()
     conn.close()
 
-    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id)
-    custom_order = get_custom_bracket_order(category_key)
+    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id, competition_id=competition_id)
+    custom_order = get_custom_bracket_order(category_key, competition_id=competition_id)
 
     if custom_order:
         ids_list = custom_order
@@ -414,7 +416,7 @@ def swap_participants(
     if 0 <= index_a < len(ids_list) and 0 <= index_b < len(ids_list):
         ids_list[index_a], ids_list[index_b] = ids_list[index_b], ids_list[index_a]
 
-    save_custom_bracket_order(category_key, ids_list)
+    save_custom_bracket_order(category_key, ids_list, competition_id=competition_id)
     return {"status": "swapped"}
 
 
@@ -424,12 +426,13 @@ def toggle_approval(
     gender: str,
     age_category_name: str,
     weight_name: str,
+    competition_id: Optional[int] = None,
     admin: str = Depends(get_current_admin),
 ):
     category_key = (class_name, gender, age_category_name, weight_name)
-    current_approved = get_approved_statuses()
+    current_approved = get_approved_statuses(competition_id=competition_id)
     is_currently_approved = category_key in current_approved
-    update_approval_status(category_key, not is_currently_approved)
+    update_approval_status(category_key, not is_currently_approved, competition_id=competition_id)
     return {"approved": not is_currently_approved}
 
 
@@ -439,10 +442,11 @@ def regenerate_bracket(
     gender: str,
     age_category_name: str,
     weight_name: str,
+    competition_id: Optional[int] = None,
     admin: str = Depends(get_current_admin),
 ):
     category_key = (class_name, gender, age_category_name, weight_name)
-    delete_custom_bracket_order(category_key)
+    delete_custom_bracket_order(category_key, competition_id=competition_id)
     return {"status": "regenerated"}
 
 
@@ -532,6 +536,7 @@ def admin_get_bracket_image(
     gender: str,
     age_category_name: str,
     weight_name: str,
+    competition_id: Optional[int] = None,
     admin: str = Depends(get_current_admin),
 ):
     conn = get_db_connection()
@@ -573,12 +578,12 @@ def admin_get_bracket_image(
     cur.close()
     conn.close()
 
-    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id)
+    participants = get_participants_for_bracket(age_cat_id, weight_cat_id, cls_id, competition_id=competition_id)
     if not participants:
         raise HTTPException(status_code=404, detail="Нет участников в этой категории")
 
     category_key = (class_name, gender, age_category_name, weight_name)
-    custom_order = get_custom_bracket_order(category_key)
+    custom_order = get_custom_bracket_order(category_key, competition_id=competition_id)
 
     if custom_order:
         conn2 = get_db_connection()
