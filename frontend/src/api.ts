@@ -56,6 +56,7 @@ interface BracketParams {
   gender: string;
   age_category_name: string;
   weight_name: string;
+  competition_id?: number;
 }
 
 interface SwapParams extends BracketParams {
@@ -153,7 +154,7 @@ export const adminApi = {
     formData.append('file', file);
     return api.post('/admin/import-csv', formData);
   },
-  getBracketCategories: () => api.get('/admin/brackets/categories'),
+  getBracketCategories: (competition_id?: number) => api.get('/admin/brackets/categories', { params: competition_id !== undefined ? { competition_id } : {} }),
   getBracketDetail: (params: BracketParams) => api.get('/admin/brackets/detail', { params }),
   swapParticipants: (params: SwapParams) => api.post('/admin/brackets/swap', null, { params }),
   toggleApproval: (params: BracketParams) => api.post('/admin/brackets/approve', null, { params }),

@@ -1,6 +1,12 @@
 import { useEffect, useState, useCallback } from 'react'
-import { adminApi } from '../../api'
+import { adminApi, competitionsApi } from '../../api'
 import { Trophy, Check, X, RefreshCw, ChevronLeft, Loader2, Download } from 'lucide-react'
+
+interface Competition {
+  id: number
+  name: string
+  discipline: string
+}
 
 interface Category {
   class_name: string
@@ -20,6 +26,8 @@ interface BracketParticipant {
 }
 
 export default function AdminBrackets() {
+  const [competitions, setCompetitions] = useState<Competition[]>([])
+  const [competitionId, setCompetitionId] = useState<number | undefined>(undefined)
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Category | null>(null)
@@ -30,16 +38,33 @@ export default function AdminBrackets() {
   const [bracketImageUrl, setBracketImageUrl] = useState('')
 
   useEffect(() => {
-    loadCategories()
+    competitionsApi.getAll().then((r) => {
+      const list: Competition[] = r.data
+      setCompetitions(list)
+      if (list.length === 1) setCompetitionId(list[0].id)
+    })
   }, [])
 
-  const loadCategories = () => {
+  useEffect(() => {
+    loadCategories(competitionId)
+  }, [competitionId])
+
+  const loadCategories = (cid?: number) => {
     setLoading(true)
-    adminApi.getBracketCategories().then((r) => {
+    setSelected(null)
+    adminApi.getBracketCategories(cid).then((r) => {
       setCategories(r.data)
       setLoading(false)
     })
   }
+
+  const buildParams = (cat: Category) => ({
+    class_name: cat.class_name,
+    gender: cat.gender,
+    age_category_name: cat.age_category_name,
+    weight_name: cat.weight_name,
+    ...(competitionId !== undefined ? { competition_id: competitionId } : {}),
+  })
 
   const selectCategory = useCallback(async (cat: Category) => {
     setSelected(cat)
@@ -51,6 +76,7 @@ export default function AdminBrackets() {
         gender: cat.gender,
         age_category_name: cat.age_category_name,
         weight_name: cat.weight_name,
+        ...(competitionId !== undefined ? { competition_id: competitionId } : {}),
       }
       const res = await adminApi.getBracketDetail(params)
       setBracket(res.data.participants)
@@ -63,7 +89,7 @@ export default function AdminBrackets() {
       }
     } catch {}
     setActionLoading(false)
-  }, [])
+  }, [competitionId])
 
   const handleSwap = async (index: number) => {
     if (!selected) return
@@ -78,10 +104,7 @@ export default function AdminBrackets() {
     setActionLoading(true)
     try {
       await adminApi.swapParticipants({
-        class_name: selected.class_name,
-        gender: selected.gender,
-        age_category_name: selected.age_category_name,
-        weight_name: selected.weight_name,
+        ...buildParams(selected),
         index_a: swapFrom,
         index_b: index,
       })
@@ -95,14 +118,9 @@ export default function AdminBrackets() {
     if (!selected) return
     setActionLoading(true)
     try {
-      const res = await adminApi.toggleApproval({
-        class_name: selected.class_name,
-        gender: selected.gender,
-        age_category_name: selected.age_category_name,
-        weight_name: selected.weight_name,
-      })
+      const res = await adminApi.toggleApproval(buildParams(selected))
       setIsApproved(res.data.approved)
-      loadCategories()
+      loadCategories(competitionId)
     } catch {}
     setActionLoading(false)
   }
@@ -111,12 +129,7 @@ export default function AdminBrackets() {
     if (!selected) return
     setActionLoading(true)
     try {
-      await adminApi.regenerateBracket({
-        class_name: selected.class_name,
-        gender: selected.gender,
-        age_category_name: selected.age_category_name,
-        weight_name: selected.weight_name,
-      })
+      await adminApi.regenerateBracket(buildParams(selected))
       await selectCategory(selected)
     } catch {}
     setActionLoading(false)
@@ -190,12 +203,7 @@ export default function AdminBrackets() {
               </button>
               <button
                 onClick={() => {
-                  adminApi.downloadBracketPng({
-                    class_name: selected.class_name,
-                    gender: selected.gender,
-                    age_category_name: selected.age_category_name,
-                    weight_name: selected.weight_name,
-                  }).catch(() => {})
+                  adminApi.downloadBracketPng(buildParams(selected)).catch(() => {})
                 }}
                 disabled={actionLoading}
                 className="flex items-center justify-center gap-2 py-2.5 bg-surface-light border border-border rounded-lg text-text-secondary text-sm font-medium cursor-pointer hover:border-success/30 transition-colors disabled:opacity-50"
@@ -221,7 +229,21 @@ export default function AdminBrackets() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Управление сетками</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Управление сетками</h1>
+        {competitions.length > 1 && (
+          <select
+            value={competitionId ?? ''}
+            onChange={(e) => setCompetitionId(e.target.value ? Number(e.target.value) : undefined)}
+            className="px-3 py-2 bg-surface-light border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary/50"
+          >
+            <option value="">Все соревнования</option>
+            {competitions.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
 
       {loading ? (
         <div className="text-center py-12 text-text-muted">Загрузка...</div>
