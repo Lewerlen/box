@@ -23,6 +23,15 @@ const STEP_LABELS: Record<number, string> = {
 
 const TOTAL_STEPS = 14
 
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+
+function sliderStyle(value: number, min: number, max: number) {
+  const pct = ((value - min) / (max - min)) * 100
+  return {
+    background: `linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ${pct}%, var(--color-border) ${pct}%, var(--color-border) 100%)`
+  }
+}
+
 function parseDateInput(input: string): { valid: boolean; iso: string; display: string } {
   const cleaned = input.trim().replace(/-/g, '.')
   const match = cleaned.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/)
@@ -48,7 +57,9 @@ export default function RegistrationPage() {
 
   const [fio, setFio] = useState('')
   const [gender, setGender] = useState('')
-  const [dobInput, setDobInput] = useState('')
+  const [dobDay, setDobDay] = useState(1)
+  const [dobMonth, setDobMonth] = useState(1)
+  const [dobYear, setDobYear] = useState(2000)
   const [dobIso, setDobIso] = useState('')
   const [dobDisplay, setDobDisplay] = useState('')
   const [ageCategoryId, setAgeCategoryId] = useState<number | null>(null)
@@ -118,17 +129,13 @@ export default function RegistrationPage() {
   }, [step, ageCategoryId, regionId, cityId, clubId])
 
   const handleDobSubmit = async () => {
-    if (!dobInput) { setError('Введите дату рождения'); return }
-    const parsed = parseDateInput(dobInput)
-    if (!parsed.valid) {
-      setError('Неверная дата. Введите дату в формате ДД.ММ.ГГГГ или ДД-ММ-ГГГГ.')
-      return
-    }
-    setDobIso(parsed.iso)
-    setDobDisplay(parsed.display)
+    const iso = `${dobYear}-${String(dobMonth).padStart(2, '0')}-${String(dobDay).padStart(2, '0')}`
+    const display = `${String(dobDay).padStart(2, '0')}.${String(dobMonth).padStart(2, '0')}.${dobYear}`
+    setDobIso(iso)
+    setDobDisplay(display)
     if (!gender) { setError('Пол не выбран'); return }
     try {
-      const res = await registrationApi.determineAgeCategory(parsed.iso, gender)
+      const res = await registrationApi.determineAgeCategory(iso, gender)
       setAgeCategoryId(res.data.age_category.id)
       setAgeCategoryName(res.data.age_category.name)
       setError('')
@@ -164,7 +171,7 @@ export default function RegistrationPage() {
 
   const resetForm = () => {
     setStep(1)
-    setFio(''); setGender(''); setDobInput(''); setDobIso(''); setDobDisplay('')
+    setFio(''); setGender(''); setDobDay(1); setDobMonth(1); setDobYear(2000); setDobIso(''); setDobDisplay('')
     setAgeCategoryId(null); setAgeCategoryName(''); setWeightCategoryId(null); setWeightCategoryName('')
     setClassName(''); setRankName(''); setRankDateInput(''); setRankDateIso(''); setRankDateDisplay('')
     setOrderNumber(''); setRegionId(null); setRegionName(''); setCityId(null); setCityName('')
@@ -289,17 +296,54 @@ export default function RegistrationPage() {
         )}
 
         {step === 3 && (
-          <div>
-            <label className="block text-sm text-text-secondary mb-2">Дата рождения (в формате ДД.ММ.ГГГГ)</label>
-            <input value={dobInput} onChange={(e) => setDobInput(e.target.value)} placeholder="01.01.2000"
-              className="w-full px-4 py-3 bg-surface-light border border-border rounded-lg text-text placeholder:text-text-muted focus:outline-none focus:border-primary/50"
-              onKeyDown={(e) => { if (e.key === 'Enter') handleDobSubmit() }}
-            />
-            {ageCategoryName && <p className="mt-3 text-sm text-success font-medium">Категория: {ageCategoryName}</p>}
-            <button onClick={handleDobSubmit}
-              className="mt-4 w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
-              Далее
-            </button>
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-text-secondary">День</label>
+                <input
+                  type="number" min={1} max={31} value={dobDay}
+                  onChange={(e) => setDobDay(Math.min(31, Math.max(1, parseInt(e.target.value) || 1)))}
+                  className="w-16 px-2 py-1 text-center bg-surface-light border border-border rounded-lg text-text font-bold text-lg focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              <input type="range" min={1} max={31} value={dobDay} onChange={(e) => setDobDay(parseInt(e.target.value))}
+                className="dob-slider" style={sliderStyle(dobDay, 1, 31)} />
+              <div className="flex justify-between text-xs text-text-muted mt-1"><span>1</span><span>31</span></div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-text-secondary">Месяц</label>
+                <span className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-primary font-medium text-sm">{MONTHS[dobMonth - 1]}</span>
+              </div>
+              <input type="range" min={1} max={12} value={dobMonth} onChange={(e) => setDobMonth(parseInt(e.target.value))}
+                className="dob-slider" style={sliderStyle(dobMonth, 1, 12)} />
+              <div className="flex justify-between text-xs text-text-muted mt-1"><span>Янв</span><span>Дек</span></div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-text-secondary">Год</label>
+                <input
+                  type="number" min={1930} max={2022} value={dobYear}
+                  onChange={(e) => setDobYear(Math.min(2022, Math.max(1930, parseInt(e.target.value) || 2000)))}
+                  className="w-24 px-2 py-1 text-center bg-surface-light border border-border rounded-lg text-text font-bold text-lg focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              <input type="range" min={1930} max={2022} value={dobYear} onChange={(e) => setDobYear(parseInt(e.target.value))}
+                className="dob-slider" style={sliderStyle(dobYear, 1930, 2022)} />
+              <div className="flex justify-between text-xs text-text-muted mt-1"><span>1930</span><span>2022</span></div>
+            </div>
+
+            <div className="pt-2 border-t border-border-light">
+              <p className="text-center text-text-secondary text-sm mb-4">
+                Дата: <span className="font-bold text-text text-base">{String(dobDay).padStart(2,'0')}.{String(dobMonth).padStart(2,'0')}.{dobYear}</span>
+              </p>
+              <button onClick={handleDobSubmit}
+                className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
+                Далее
+              </button>
+            </div>
           </div>
         )}
 
