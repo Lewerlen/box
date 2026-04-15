@@ -327,5 +327,68 @@ def seed_age_categories(cur):
                 if added_weights_count > 0:
                     print(f"    -> Добавлено весовых категорий для существующей возрастной: {added_weights_count} шт.")
 
+
+
+def seed_competitions():
+    """Добавляет тестовые соревнования, если их нет в БД."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM competitions")
+            count = cur.fetchone()[0]
+            if count == 0:
+                print("  -> Добавление тестовых соревнований...")
+                sample_competitions = [
+                    (
+                        "Чемпионат и Первенство Республики Башкортостан по муайтай 2026",
+                        "muay_thai",
+                        "2026-04-20",
+                        "2026-04-21",
+                        "г. Уфа, СК Уфа-Арена",
+                        "active",
+                    ),
+                    (
+                        "Открытый кубок РБ по кикбоксингу 2026",
+                        "kickboxing",
+                        "2026-05-15",
+                        "2026-05-16",
+                        "г. Стерлитамак, ДС Строитель",
+                        "upcoming",
+                    ),
+                    (
+                        "Первенство Республики Башкортостан по муайтай 2025",
+                        "muay_thai",
+                        "2025-11-10",
+                        "2025-11-11",
+                        "г. Уфа, СК Динамо",
+                        "finished",
+                    ),
+                    (
+                        "Чемпионат РБ по кикбоксингу 2025",
+                        "kickboxing",
+                        "2025-09-20",
+                        "2025-09-21",
+                        "г. Нефтекамск, ФОК Нефтекамск",
+                        "finished",
+                    ),
+                ]
+                for comp in sample_competitions:
+                    cur.execute(
+                        """
+                        INSERT INTO competitions (name, discipline, date_start, date_end, location, status)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        comp,
+                    )
+                conn.commit()
+                print(f"  -> Добавлено {len(sample_competitions)} тестовых соревнований.")
+            else:
+                print(f"  -> Соревнования уже есть в БД ({count} шт.), пропускаем.")
+    except Exception as e:
+        conn.rollback()
+        print(f"  -> Ошибка при добавлении соревнований: {e}")
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     seed_data()

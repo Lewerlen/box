@@ -1,100 +1,198 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { publicApi } from '../api'
-import { Users, MapPin, Trophy, UserPlus } from 'lucide-react'
+import { competitionsApi } from '../api'
+import { MapPin, Calendar, Users, ChevronRight, Trophy } from 'lucide-react'
 
-interface Stats {
-  total_participants: number
-  total_clubs: number
-  total_regions: number
-  male_count: number
-  female_count: number
+interface Competition {
+  id: number
+  name: string
+  discipline: 'muay_thai' | 'kickboxing'
+  date_start: string | null
+  date_end: string | null
+  location: string | null
+  status: 'active' | 'upcoming' | 'finished'
+  participants_count: number
+}
+
+const DISCIPLINE_LABEL: Record<string, string> = {
+  muay_thai: 'Тайский бокс',
+  kickboxing: 'Кикбоксинг',
+}
+
+const DISCIPLINE_COLORS: Record<string, string> = {
+  muay_thai: 'bg-red-500/15 text-red-400 border border-red-500/30',
+  kickboxing: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  active: 'Идёт регистрация',
+  upcoming: 'Скоро',
+  finished: 'Завершено',
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  active: 'bg-green-500/15 text-green-400 border border-green-500/30',
+  upcoming: 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30',
+  finished: 'bg-gray-500/15 text-gray-400 border border-gray-500/30',
+}
+
+function formatDateRange(start: string | null, end: string | null): string {
+  if (!start) return '—'
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  if (!end || start === end) return fmt(start)
+  const s = new Date(start)
+  const e = new Date(end)
+  if (s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth()) {
+    return `${s.getDate()}–${e.getDate()} ${e.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}`
+  }
+  return `${fmt(start)} – ${fmt(end)}`
+}
+
+function DisciplineBadge({ discipline }: { discipline: string }) {
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${DISCIPLINE_COLORS[discipline] ?? 'bg-gray-500/15 text-gray-400'}`}>
+      {DISCIPLINE_LABEL[discipline] ?? discipline}
+    </span>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[status] ?? 'bg-gray-500/15 text-gray-400'}`}>
+      {STATUS_LABEL[status] ?? status}
+    </span>
+  )
+}
+
+function CompetitionCard({ comp }: { comp: Competition }) {
+  return (
+    <Link
+      to={`/competition/${comp.id}`}
+      className="group relative bg-surface rounded-xl border border-border-light hover:border-primary/40 hover:shadow-lg transition-all no-underline overflow-hidden flex flex-col"
+    >
+      <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+        <DisciplineBadge discipline={comp.discipline} />
+      </div>
+
+      <div className="p-5 flex flex-col gap-3 flex-1">
+        <div className="pr-24">
+          <h3 className="text-base font-semibold text-text leading-snug group-hover:text-primary transition-colors">
+            {comp.name}
+          </h3>
+        </div>
+
+        <div className="flex flex-col gap-1.5 text-sm text-text-muted">
+          {(comp.date_start || comp.date_end) && (
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 shrink-0 text-text-dim" />
+              <span>{formatDateRange(comp.date_start, comp.date_end)}</span>
+            </div>
+          )}
+          {comp.location && (
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 shrink-0 text-text-dim" />
+              <span>{comp.location}</span>
+            </div>
+          )}
+          {comp.participants_count > 0 && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 shrink-0 text-text-dim" />
+              <span>{comp.participants_count} участников</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-auto pt-3 border-t border-border-light flex items-center justify-between">
+          <StatusBadge status={comp.status} />
+          <ChevronRight className="w-4 h-4 text-text-dim group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+        </div>
+      </div>
+    </Link>
+  )
 }
 
 export default function HomePage() {
-  const [stats, setStats] = useState<Stats | null>(null)
+  const [competitions, setCompetitions] = useState<Competition[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    publicApi.getStats().then((r) => setStats(r.data)).catch(() => {})
+    competitionsApi.getAll()
+      .then((r) => setCompetitions(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
+
+  const active = competitions.filter((c) => c.status === 'active' || c.status === 'upcoming')
+  const finished = competitions.filter((c) => c.status === 'finished')
 
   return (
     <div>
       <section className="relative bg-nav overflow-hidden">
-        <img src="/fighter-left.png" alt="" className="absolute left-0 md:left-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none" style={{filter: 'brightness(0) invert(1)'}} />
-        <img src="/fighter-right.png" alt="" className="absolute right-0 md:right-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none" style={{filter: 'brightness(0) invert(1)'}} />
-        <div className="relative max-w-7xl mx-auto px-4 py-10 md:py-16 text-center">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-nav-text leading-tight">
-            Чемпионат и Первенство
+        <img
+          src="/fighter-left.png"
+          alt=""
+          className="absolute left-0 md:left-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none"
+          style={{ filter: 'brightness(0) invert(1)' }}
+        />
+        <img
+          src="/fighter-right.png"
+          alt=""
+          className="absolute right-0 md:right-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none"
+          style={{ filter: 'brightness(0) invert(1)' }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 py-10 md:py-14 text-center">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 text-nav-text leading-tight">
+            Федерация Муайтай
             <br />
-            Республики Башкортостан
-            <br />
-            <span className="text-accent">по муайтай</span>
+            <span className="text-accent">Республики Башкортостан</span>
           </h1>
-          <p className="text-nav-text-muted text-base md:text-lg mb-10 max-w-2xl mx-auto">
-            Управление турниром, регистрация участников, просмотр турнирных сеток и результатов
+          <p className="text-nav-text-muted text-base md:text-lg max-w-2xl mx-auto">
+            Регистрация участников, турнирные сетки и результаты соревнований
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              to="/register"
-              className="px-8 py-3.5 bg-accent hover:bg-accent-dark text-white rounded-lg font-semibold transition-all shadow-lg no-underline"
-            >
-              <span className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5" />
-                Регистрация участника
-              </span>
-            </Link>
-            <Link
-              to="/participants"
-              className="px-8 py-3.5 bg-nav-active/30 hover:bg-nav-active/50 text-nav-text border border-nav-divider rounded-lg font-semibold transition-all no-underline"
-            >
-              Список участников
-            </Link>
-          </div>
         </div>
       </section>
 
-      {stats && (
-        <section className="max-w-7xl mx-auto px-4 pt-6 pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: Users, label: 'Участников', value: stats.total_participants, color: 'text-primary' },
-              { icon: Trophy, label: 'Клубов', value: stats.total_clubs, color: 'text-accent' },
-              { icon: MapPin, label: 'Регионов', value: stats.total_regions, color: 'text-success' },
-              { icon: Users, label: 'Муж / Жен', value: `${stats.male_count} / ${stats.female_count}`, color: 'text-primary-light' },
-            ].map((stat, i) => (
-              <div key={i} className="bg-surface rounded-xl p-6 border border-border-light shadow-sm text-center">
-                <stat.icon className={`w-7 h-7 mx-auto mb-3 ${stat.color}`} />
-                <div className="text-3xl font-bold mb-1 text-text">{stat.value}</div>
-                <div className="text-text-muted text-sm">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
+        {loading && (
+          <div className="text-center py-16 text-text-muted">Загрузка соревнований...</div>
+        )}
 
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-text mb-8 text-center">Разделы турнира</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { to: '/participants', title: 'Участники', desc: 'Список всех зарегистрированных участников с фильтрами по полу, возрасту, весу, классу и клубу', icon: Users },
-            { to: '/brackets', title: 'Турнирные сетки', desc: 'Просмотр утверждённых турнирных сеток по категориям', icon: Trophy },
-            { to: '/register', title: 'Регистрация', desc: 'Зарегистрировать нового участника на турнир', icon: UserPlus },
-          ].map((card) => (
-            <Link
-              key={card.to}
-              to={card.to}
-              className="group bg-surface rounded-xl p-8 border border-border-light hover:border-primary/30 hover:shadow-md transition-all no-underline"
-            >
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                <card.icon className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-text">{card.title}</h3>
-              <p className="text-text-muted text-sm leading-relaxed">{card.desc}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+        {!loading && competitions.length === 0 && (
+          <div className="text-center py-16">
+            <Trophy className="w-12 h-12 text-text-dim mx-auto mb-4" />
+            <p className="text-text-muted text-lg">Соревнования пока не добавлены</p>
+          </div>
+        )}
+
+        {!loading && active.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold text-text mb-5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+              Активные соревнования
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {active.map((comp) => (
+                <CompetitionCard key={comp.id} comp={comp} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!loading && finished.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold text-text mb-5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
+              Прошедшие соревнования
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {finished.map((comp) => (
+                <CompetitionCard key={comp.id} comp={comp} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   )
 }

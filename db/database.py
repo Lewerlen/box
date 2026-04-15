@@ -200,6 +200,18 @@ def create_tables():
             id SERIAL PRIMARY KEY,
             suffix VARCHAR(255) NOT NULL UNIQUE
         );
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS competitions (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(500) NOT NULL,
+            discipline VARCHAR(50) NOT NULL DEFAULT 'muay_thai',
+            date_start DATE,
+            date_end DATE,
+            location VARCHAR(500),
+            status VARCHAR(20) NOT NULL DEFAULT 'upcoming',
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
         """
     )
     conn = None

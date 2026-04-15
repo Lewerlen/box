@@ -43,6 +43,7 @@ export default function Layout() {
 
   const adminLinks = [
     { to: '/admin', label: 'Панель' },
+    { to: '/admin/competitions', label: 'Соревнования' },
     { to: '/admin/participants', label: 'Участники' },
     { to: '/admin/brackets', label: 'Сетки' },
     { to: '/admin/references', label: 'Справочники' },

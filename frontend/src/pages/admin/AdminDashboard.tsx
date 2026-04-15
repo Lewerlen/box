@@ -50,15 +50,20 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Link to="/admin/competitions" className="bg-surface-light rounded-xl border border-border p-6 hover:border-yellow-500/50 transition-colors no-underline group">
+          <Trophy className="w-8 h-8 text-yellow-500 mb-3" />
+          <h3 className="text-lg font-semibold text-text">Соревнования</h3>
+          <p className="text-text-muted text-sm mt-1">Создание и управление соревнованиями</p>
+        </Link>
         <Link to="/admin/participants" className="bg-surface-light rounded-xl border border-border p-6 hover:border-primary/50 transition-colors no-underline group">
           <Users className="w-8 h-8 text-primary mb-3" />
-          <h3 className="text-lg font-semibold text-text">Управление участниками</h3>
-          <p className="text-text-muted text-sm mt-1">Просмотр, редактирование, удаление, импорт CSV</p>
+          <h3 className="text-lg font-semibold text-text">Участники</h3>
+          <p className="text-text-muted text-sm mt-1">Просмотр, редактирование, импорт CSV</p>
         </Link>
         <Link to="/admin/brackets" className="bg-surface-light rounded-xl border border-border p-6 hover:border-accent/50 transition-colors no-underline group">
           <Trophy className="w-8 h-8 text-accent mb-3" />
-          <h3 className="text-lg font-semibold text-text">Управление сетками</h3>
+          <h3 className="text-lg font-semibold text-text">Сетки</h3>
           <p className="text-text-muted text-sm mt-1">Генерация, swap, утверждение сеток</p>
         </Link>
         <Link to="/admin/references" className="bg-surface-light rounded-xl border border-border p-6 hover:border-success/50 transition-colors no-underline group">

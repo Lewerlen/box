@@ -1,5 +1,5 @@
 from db.database import create_tables
-from db.seed import seed_data
+from db.seed import seed_data, seed_competitions
 
 
 def initialize_database():
@@ -8,12 +8,13 @@ def initialize_database():
     """
     print("--- Инициализация базы данных ---")
 
-    # Шаг 1: Создание всех таблиц
     print("1. Проверка и создание таблиц...")
     create_tables()
 
-    # Шаг 2: Заполнение справочников данными
     print("\n2. Проверка и заполнение справочников...")
     seed_data()
+
+    print("\n3. Проверка и заполнение соревнований...")
+    seed_competitions()
 
     print("--- Инициализация базы данных завершена ---")

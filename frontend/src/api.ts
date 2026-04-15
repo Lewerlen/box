@@ -109,6 +109,28 @@ export const authApi = {
   getMe: () => api.get('/auth/me'),
 };
 
+export const competitionsApi = {
+  getAll: () => api.get('/competitions'),
+  getById: (id: number) => api.get(`/competitions/${id}`),
+  create: (data: {
+    name: string;
+    discipline: string;
+    date_start?: string;
+    date_end?: string;
+    location?: string;
+    status: string;
+  }) => api.post('/competitions', data),
+  update: (id: number, data: {
+    name?: string;
+    discipline?: string;
+    date_start?: string;
+    date_end?: string;
+    location?: string;
+    status?: string;
+  }) => api.put(`/competitions/${id}`, data),
+  delete: (id: number) => api.delete(`/competitions/${id}`),
+};
+
 export const adminApi = {
   getParticipants: (params: ParticipantFilters) => api.get('/admin/participants', { params }),
   getParticipant: (id: number) => api.get(`/admin/participants/${id}`),
