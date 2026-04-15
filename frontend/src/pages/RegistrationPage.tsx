@@ -424,7 +424,7 @@ export default function RegistrationPage() {
         {step === 7 && (
           <div>
             <label className="block text-sm text-text-secondary mb-3">Разряд (если есть)</label>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-2">
               {ranks.map((r) => (
                 <button key={r.id} onClick={() => { setRankName(r.name); setError(''); setStep(8) }}
                   className={`w-full py-3 px-4 rounded-lg border text-left text-sm font-medium cursor-pointer transition-all ${rankName === r.name ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-surface-light hover:border-primary/30 text-text'}`}>
