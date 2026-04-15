@@ -351,6 +351,10 @@ def create_tables():
         cur.close()
         conn.commit()
         print("Проверка/создание таблиц завершено.")
+    except RuntimeError:
+        if conn:
+            conn.rollback()
+        raise
     except (Exception, psycopg2.DatabaseError) as error:
         print(f"Ошибка при создании таблиц: {error}") # Уточнено сообщение об ошибке
         if conn:
