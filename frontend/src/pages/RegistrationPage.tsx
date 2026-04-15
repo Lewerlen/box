@@ -283,7 +283,7 @@ export default function RegistrationPage() {
           <div>
             <label className="block text-sm text-text-secondary mb-3">Выберите пол</label>
             <div className="grid grid-cols-2 gap-3">
-              {[{ value: 'Мужской', label: 'Муж' }, { value: 'Женский', label: 'Жен' }].map((g) => (
+              {[{ value: 'Мужской', label: 'Мужской' }, { value: 'Женский', label: 'Женский' }].map((g) => (
                 <button key={g.value} onClick={() => { setGender(g.value); setStep(3) }}
                   className={`py-4 rounded-lg border text-center font-medium cursor-pointer transition-all ${gender === g.value ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-surface-light hover:border-primary/30 text-text'}`}>
                   {g.label}
