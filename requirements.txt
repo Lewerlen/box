@@ -3,3 +3,8 @@ psycopg2-binary
 python-dotenv
 openpyxl
 Pillow
+aiogram
+openpyxl
+Pillow
+psycopg2-binary
+python-dotenv

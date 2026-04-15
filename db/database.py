@@ -8,14 +8,18 @@ from utils.formatters import format_weight, normalize_class_name
 load_dotenv()
 
 def get_db_connection():
-    """Устанавливает соединение с базой данных."""
-    conn = psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        port="5435"
-    )
+    """Ð£ÑÑÐ°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÑ ÑÐ¾ÐµÐ´Ð¸Ð½ÐµÐ½Ð¸Ðµ Ñ Ð±Ð°Ð·Ð¾Ð¹ Ð´Ð°Ð½Ð½ÑÑ."""
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        conn = psycopg2.connect(database_url)
+    else:
+        conn = psycopg2.connect(
+            host=os.getenv("PGHOST", os.getenv("POSTGRES_HOST", "localhost")),
+            database=os.getenv("PGDATABASE", os.getenv("POSTGRES_DB")),
+            user=os.getenv("PGUSER", os.getenv("POSTGRES_USER")),
+            password=os.getenv("PGPASSWORD", os.getenv("POSTGRES_PASSWORD")),
+            port=os.getenv("PGPORT", os.getenv("POSTGRES_PORT", "5432"))
+        )
     return conn
 
 def migrate_age_category_table(cur):
