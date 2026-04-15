@@ -24,14 +24,14 @@ export default function HomePage() {
         <img src="/fighter-left.png" alt="" className="absolute left-0 md:left-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none" style={{filter: 'brightness(0) invert(1)'}} />
         <img src="/fighter-right.png" alt="" className="absolute right-0 md:right-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none" style={{filter: 'brightness(0) invert(1)'}} />
         <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28 text-center">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-nav-text leading-tight">
             Чемпионат и Первенство
             <br />
             Республики Башкортостан
             <br />
             <span className="text-accent">по муайтай</span>
           </h1>
-          <p className="text-white/60 text-base md:text-lg mb-10 max-w-2xl mx-auto">
+          <p className="text-nav-text-muted text-base md:text-lg mb-10 max-w-2xl mx-auto">
             Управление турниром, регистрация участников, просмотр турнирных сеток и результатов
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -46,7 +46,7 @@ export default function HomePage() {
             </Link>
             <Link
               to="/participants"
-              className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg font-semibold transition-all no-underline"
+              className="px-8 py-3.5 bg-nav-active/30 hover:bg-nav-active/50 text-nav-text border border-nav-divider rounded-lg font-semibold transition-all no-underline"
             >
               Список участников
             </Link>

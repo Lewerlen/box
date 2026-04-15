@@ -58,7 +58,7 @@ export default function Layout() {
               МТ
             </div>
             <div className="hidden sm:block">
-              <span className="text-sm font-semibold text-white/95 tracking-wide uppercase">Муайтай</span>
+              <span className="text-sm font-semibold text-nav-text tracking-wide uppercase">Муайтай</span>
             </div>
           </Link>
 
@@ -69,8 +69,8 @@ export default function Layout() {
                 to={link.to}
                 className={`px-3.5 py-2 rounded text-sm font-medium transition-colors no-underline ${
                   isActive(link.to)
-                    ? 'bg-white/20 text-white'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    ? 'bg-nav-active/40 text-nav-text'
+                    : 'text-nav-text-muted hover:text-nav-text hover:bg-nav-active/20'
                 }`}
               >
                 {link.label}
@@ -79,7 +79,7 @@ export default function Layout() {
 
             {isAdmin && (
               <>
-                <div className="w-px h-5 bg-white/20 mx-2" />
+                <div className="w-px h-5 bg-nav-divider mx-2" />
                 {adminLinks.map((link) => (
                   <Link
                     key={link.to}
@@ -87,7 +87,7 @@ export default function Layout() {
                     className={`px-3.5 py-2 rounded text-sm font-medium transition-colors no-underline ${
                       isActive(link.to)
                         ? 'bg-accent/30 text-accent'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        : 'text-nav-text-muted hover:text-nav-text hover:bg-nav-active/20'
                     }`}
                   >
                     <span className="flex items-center gap-1.5">
@@ -98,7 +98,7 @@ export default function Layout() {
                 ))}
                 <button
                   onClick={logout}
-                  className="px-3 py-2 rounded text-sm font-medium text-white/50 hover:text-danger transition-colors cursor-pointer bg-transparent border-none"
+                  className="px-3 py-2 rounded text-sm font-medium text-nav-text-dim hover:text-danger transition-colors cursor-pointer bg-transparent border-none"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -108,16 +108,16 @@ export default function Layout() {
             {!isAdmin && (
               <Link
                 to="/login"
-                className="px-3 py-2 rounded text-sm font-medium text-white/40 hover:text-white/70 transition-colors no-underline"
+                className="px-3 py-2 rounded text-sm font-medium text-nav-text-dim hover:text-nav-text-muted transition-colors no-underline"
               >
                 <Shield className="w-4 h-4" />
               </Link>
             )}
 
-            <div className="w-px h-5 bg-white/20 mx-2" />
+            <div className="w-px h-5 bg-nav-divider mx-2" />
             <button
               onClick={() => setDark(!dark)}
-              className="p-2 rounded text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer bg-transparent border-none"
+              className="p-2 rounded text-nav-text-muted hover:text-nav-text hover:bg-nav-active/20 transition-colors cursor-pointer bg-transparent border-none"
               title={dark ? 'Светлая тема' : 'Тёмная тема'}
             >
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -127,12 +127,12 @@ export default function Layout() {
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={() => setDark(!dark)}
-              className="p-2 text-white/60 hover:text-white transition-colors cursor-pointer bg-transparent border-none"
+              className="p-2 text-nav-text-muted hover:text-nav-text transition-colors cursor-pointer bg-transparent border-none"
             >
               {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <button
-              className="p-2 text-white/70 bg-transparent border-none cursor-pointer"
+              className="p-2 text-nav-text-muted bg-transparent border-none cursor-pointer"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -141,14 +141,14 @@ export default function Layout() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-white/10 bg-nav-dark px-4 py-3 space-y-1">
+          <div className="md:hidden border-t border-nav-divider bg-nav-dark px-4 py-3 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
                 className={`block px-3 py-2 rounded text-sm font-medium no-underline ${
-                  isActive(link.to) ? 'bg-white/15 text-white' : 'text-white/70'
+                  isActive(link.to) ? 'bg-nav-active/30 text-nav-text' : 'text-nav-text-muted'
                 }`}
               >
                 {link.label}
@@ -160,14 +160,14 @@ export default function Layout() {
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
                 className={`block px-3 py-2 rounded text-sm font-medium no-underline ${
-                  isActive(link.to) ? 'bg-accent/20 text-accent' : 'text-white/70'
+                  isActive(link.to) ? 'bg-accent/20 text-accent' : 'text-nav-text-muted'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
             {!isAdmin && (
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-white/50 no-underline">
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-nav-text-dim no-underline">
                 Вход для администраторов
               </Link>
             )}
@@ -179,9 +179,9 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-nav text-white/60 py-8 text-center text-sm">
+      <footer className="bg-nav text-nav-text-muted py-8 text-center text-sm">
         <p className="font-medium">Чемпионат и Первенство Республики Башкортостан по муайтай</p>
-        <p className="mt-1 text-white/40 text-xs">&copy; 2026 Федерация Муайтай РБ. Все права защищены.</p>
+        <p className="mt-1 text-nav-text-dim text-xs">&copy; 2026 Федерация Муайтай РБ. Все права защищены.</p>
       </footer>
     </div>
   )

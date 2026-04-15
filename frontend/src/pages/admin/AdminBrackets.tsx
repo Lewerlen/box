@@ -137,7 +137,7 @@ export default function AdminBrackets() {
             <p className="text-text-secondary text-sm">{selected.age_category_name}, {selected.weight_name} kg</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${isApproved ? 'bg-success/10 text-success' : 'bg-text-muted/10 text-text-muted'}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${isApproved ? 'bg-success/10 text-success' : 'bg-surface-lighter text-text-muted'}`}>
               {isApproved ? 'Утверждено' : 'Не утверждено'}
             </span>
           </div>
@@ -251,7 +251,7 @@ export default function AdminBrackets() {
                   <td className="px-4 py-3 text-text-muted">{i + 1}</td>
                   <td className="px-4 py-3 font-medium">{c.class_name}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${c.gender === 'Мужской' ? 'bg-blue-500/10 text-blue-400' : 'bg-pink-500/10 text-pink-400'}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${c.gender === 'Мужской' ? 'bg-male/10 text-male' : 'bg-female/10 text-female'}`}>
                       {c.gender === 'Мужской' ? 'М' : 'Ж'}
                     </span>
                   </td>

@@ -267,7 +267,7 @@ export default function AdminParticipants() {
                     <td className="px-4 py-3 text-text-muted">{p.id}</td>
                     <td className="px-4 py-3 font-medium">{p.fio}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className={`text-xs px-2 py-1 rounded-full ${p.gender === 'Мужской' ? 'bg-blue-500/10 text-blue-400' : 'bg-pink-500/10 text-pink-400'}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${p.gender === 'Мужской' ? 'bg-male/10 text-male' : 'bg-female/10 text-female'}`}>
                         {p.gender === 'Мужской' ? 'М' : 'Ж'}
                       </span>
                     </td>
