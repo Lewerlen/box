@@ -40,7 +40,7 @@ function CustomSelect({ value, onChange, options }: CustomSelectProps) {
       {open && (
         <div ref={listRef}
           className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-xl overflow-y-auto"
-          style={{ maxHeight: '200px', scrollbarWidth: 'thin', scrollbarColor: 'var(--color-border) var(--color-surface-light)' }}>
+          style={{ maxHeight: '320px', scrollbarWidth: 'thin', scrollbarColor: 'var(--color-border) var(--color-surface-light)' }}>
           {options.map(o => (
             <button key={o.value} type="button" data-selected={o.value === value}
               onClick={() => { onChange(o.value); setOpen(false) }}
