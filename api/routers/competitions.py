@@ -7,6 +7,7 @@ from api.auth import get_current_admin
 from db.database import get_db_connection
 
 router = APIRouter()
+admin_router = APIRouter()
 
 
 class CompetitionCreate(BaseModel):
@@ -41,15 +42,21 @@ def _row_to_dict(row):
     }
 
 
+def _get_total_participants(cur) -> int:
+    cur.execute("SELECT COUNT(*) FROM participant")
+    row = cur.fetchone()
+    return row[0] if row else 0
+
+
 @router.get("")
 def list_competitions():
     conn = get_db_connection()
     try:
         cur = conn.cursor()
+        total = _get_total_participants(cur)
         cur.execute("""
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
-                   c.location, c.status, c.created_at,
-                   0 AS participants_count
+                   c.location, c.status, c.created_at
             FROM competitions c
             ORDER BY
                 CASE c.status
@@ -61,7 +68,13 @@ def list_competitions():
                 c.date_start DESC
         """)
         rows = cur.fetchall()
-        return [_row_to_dict(r) for r in rows]
+        result = []
+        for r in rows:
+            d = _row_to_dict(r)
+            if d["status"] == "active":
+                d["participants_count"] = total
+            result.append(d)
+        return result
     finally:
         conn.close()
 
@@ -73,20 +86,22 @@ def get_competition(competition_id: int):
         cur = conn.cursor()
         cur.execute("""
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
-                   c.location, c.status, c.created_at,
-                   0 AS participants_count
+                   c.location, c.status, c.created_at
             FROM competitions c
             WHERE c.id = %s
         """, (competition_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Соревнование не найдено")
-        return _row_to_dict(row)
+        d = _row_to_dict(row)
+        if d["status"] == "active":
+            d["participants_count"] = _get_total_participants(cur)
+        return d
     finally:
         conn.close()
 
 
-@router.post("", dependencies=[Depends(get_current_admin)])
+@admin_router.post("", dependencies=[Depends(get_current_admin)])
 def create_competition(data: CompetitionCreate):
     valid_disciplines = {"muay_thai", "kickboxing"}
     valid_statuses = {"upcoming", "active", "finished"}
@@ -111,7 +126,7 @@ def create_competition(data: CompetitionCreate):
         conn.close()
 
 
-@router.put("/{competition_id}", dependencies=[Depends(get_current_admin)])
+@admin_router.put("/{competition_id}", dependencies=[Depends(get_current_admin)])
 def update_competition(competition_id: int, data: CompetitionUpdate):
     fields = {}
     if data.name is not None:
@@ -157,7 +172,7 @@ def update_competition(competition_id: int, data: CompetitionUpdate):
         conn.close()
 
 
-@router.delete("/{competition_id}", dependencies=[Depends(get_current_admin)])
+@admin_router.delete("/{competition_id}", dependencies=[Depends(get_current_admin)])
 def delete_competition(competition_id: int):
     conn = get_db_connection()
     try:
@@ -174,3 +189,8 @@ def delete_competition(competition_id: int):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
+
+
+@admin_router.get("", dependencies=[Depends(get_current_admin)])
+def admin_list_competitions():
+    return list_competitions()

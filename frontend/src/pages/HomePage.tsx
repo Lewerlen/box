@@ -95,12 +95,10 @@ function CompetitionCard({ comp }: { comp: Competition }) {
               <span>{comp.location}</span>
             </div>
           )}
-          {comp.participants_count > 0 && (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 shrink-0 text-text-dim" />
-              <span>{comp.participants_count} участников</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 shrink-0 text-text-dim" />
+            <span>{comp.participants_count} участников</span>
+          </div>
         </div>
 
         <div className="mt-auto pt-3 border-t border-border-light flex items-center justify-between">

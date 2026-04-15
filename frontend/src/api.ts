@@ -119,7 +119,7 @@ export const competitionsApi = {
     date_end?: string;
     location?: string;
     status: string;
-  }) => api.post('/competitions', data),
+  }) => api.post('/admin/competitions', data),
   update: (id: number, data: {
     name?: string;
     discipline?: string;
@@ -127,8 +127,8 @@ export const competitionsApi = {
     date_end?: string;
     location?: string;
     status?: string;
-  }) => api.put(`/competitions/${id}`, data),
-  delete: (id: number) => api.delete(`/competitions/${id}`),
+  }) => api.put(`/admin/competitions/${id}`, data),
+  delete: (id: number) => api.delete(`/admin/competitions/${id}`),
 };
 
 export const adminApi = {
