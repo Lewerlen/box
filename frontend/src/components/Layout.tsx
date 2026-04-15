@@ -182,7 +182,7 @@ export default function Layout() {
       </main>
 
       <footer className="bg-nav text-nav-text-muted py-8 text-center text-sm">
-        <p className="font-medium">Чемпионат и Первенство Республики Башкортостан по муайтай</p>
+        <p className="font-medium">Федерация Муайтай Республики Башкортостан</p>
         <p className="mt-1 text-nav-text-dim text-xs">&copy; 2026 Федерация Муайтай РБ. Все права защищены.</p>
       </footer>
     </div>

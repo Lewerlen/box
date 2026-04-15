@@ -20,8 +20,8 @@ const DISCIPLINE_LABEL: Record<string, string> = {
 }
 
 const DISCIPLINE_COLORS: Record<string, string> = {
-  muay_thai: 'bg-red-500/15 text-red-400 border border-red-500/30',
-  kickboxing: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+  muay_thai: 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30',
+  kickboxing: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -31,9 +31,9 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-500/15 text-green-400 border border-green-500/30',
-  upcoming: 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30',
-  finished: 'bg-gray-500/15 text-gray-400 border border-gray-500/30',
+  active: 'bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/30',
+  upcoming: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border border-yellow-500/30',
+  finished: 'bg-gray-500/15 text-gray-600 dark:text-gray-400 border border-gray-500/30',
 }
 
 function formatDateRange(start: string | null, end: string | null): string {
