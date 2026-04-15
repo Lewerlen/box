@@ -26,9 +26,6 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full translate-y-1/3 -translate-x-1/4" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28 text-center">
-          <div className="inline-block mb-6 px-4 py-1.5 bg-accent/20 border border-accent/30 rounded-full">
-            <span className="text-accent text-sm font-semibold tracking-wide uppercase">Официальный турнир</span>
-          </div>
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
             Чемпионат и Первенство
             <br />
