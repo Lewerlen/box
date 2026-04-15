@@ -55,10 +55,10 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 no-underline">
             <div className="w-9 h-9 bg-accent rounded flex items-center justify-center text-white font-bold text-sm tracking-wide">
-              ТБ
+              МТ
             </div>
             <div className="hidden sm:block">
-              <span className="text-sm font-semibold text-white/95 tracking-wide uppercase">Тайский бокс</span>
+              <span className="text-sm font-semibold text-white/95 tracking-wide uppercase">Муайтай</span>
             </div>
           </Link>
 
