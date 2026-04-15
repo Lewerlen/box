@@ -150,10 +150,61 @@ export default function RegistrationPage() {
 
         {step === 2 && (
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Дата рождения</label>
-            <input type="date" value={dob} onChange={(e) => setDob(e.target.value)}
-              className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary/50" />
-            {ageCategoryName && <p className="mt-2 text-sm text-success">Категория: {ageCategoryName}</p>}
+            <label className="block text-sm text-text-secondary mb-3">Дата рождения</label>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs text-text-muted mb-1">День</label>
+                <select
+                  value={dob ? parseInt(dob.split('-')[2] || '') || '' : ''}
+                  onChange={(e) => {
+                    const parts = dob ? dob.split('-') : ['', '', '']
+                    parts[2] = e.target.value.padStart(2, '0')
+                    setDob(parts.join('-'))
+                  }}
+                  className="w-full px-3 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 appearance-none"
+                >
+                  <option value="">--</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-text-muted mb-1">Месяц</label>
+                <select
+                  value={dob ? parseInt(dob.split('-')[1] || '') || '' : ''}
+                  onChange={(e) => {
+                    const parts = dob ? dob.split('-') : ['', '', '']
+                    parts[1] = e.target.value.padStart(2, '0')
+                    setDob(parts.join('-'))
+                  }}
+                  className="w-full px-3 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 appearance-none"
+                >
+                  <option value="">--</option>
+                  {['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'].map((m, i) => (
+                    <option key={i + 1} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-text-muted mb-1">Год</label>
+                <select
+                  value={dob ? parseInt(dob.split('-')[0] || '') || '' : ''}
+                  onChange={(e) => {
+                    const parts = dob ? dob.split('-') : ['', '', '']
+                    parts[0] = e.target.value
+                    setDob(parts.join('-'))
+                  }}
+                  className="w-full px-3 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary/50 appearance-none"
+                >
+                  <option value="">--</option>
+                  {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - 5 - i).map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {ageCategoryName && <p className="mt-3 text-sm text-success font-medium">Категория: {ageCategoryName}</p>}
             <button onClick={handleDobSubmit}
               className="mt-4 w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
               <span className="flex items-center justify-center gap-2">Далее <ChevronRight className="w-4 h-4" /></span>
