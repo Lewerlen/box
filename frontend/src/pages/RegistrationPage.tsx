@@ -439,7 +439,7 @@ export default function RegistrationPage() {
               setSkippedSteps(next)
               setStep(10)
             }}
-              className="mt-3 w-full py-3 bg-surface-lighter hover:bg-surface-lighter/80 text-text-secondary rounded-lg font-medium cursor-pointer border-none transition-colors flex items-center justify-center gap-2">
+              className="mt-3 w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors flex items-center justify-center gap-2">
               <SkipForward className="w-4 h-4" /> Пропустить
             </button>
           </div>
