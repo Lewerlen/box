@@ -1,24 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #dc2626;
-  --color-primary-dark: #b91c1c;
-  --color-primary-light: #ef4444;
-  --color-accent: #f59e0b;
-  --color-surface: #0f172a;
-  --color-surface-light: #1e293b;
-  --color-surface-lighter: #334155;
-  --color-border: #334155;
-  --color-text: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
-  --color-success: #10b981;
-  --color-danger: #ef4444;
+  --color-primary: #1e3a5f;
+  --color-primary-dark: #152c4a;
+  --color-primary-light: #2a5082;
+  --color-accent: #c8962e;
+  --color-accent-dark: #a67b24;
+  --color-surface: #ffffff;
+  --color-surface-light: #f8f9fb;
+  --color-surface-lighter: #f0f2f5;
+  --color-border: #d8dce3;
+  --color-border-light: #e8eaee;
+  --color-text: #1a1f2b;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #8694a7;
+  --color-success: #1a8754;
+  --color-danger: #c62828;
 }
 
 body {
   margin: 0;
-  background: var(--color-surface);
+  background: var(--color-surface-light);
   color: var(--color-text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
@@ -29,5 +31,5 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-surface-lighter) var(--color-surface);
+  scrollbar-color: var(--color-border) var(--color-surface-light);
 }

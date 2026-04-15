@@ -220,7 +220,7 @@ export default function ParticipantsPage() {
                   <tr key={p.id} className="border-b border-border/50 hover:bg-surface-lighter/30 transition-colors">
                     <td className="px-4 py-3 font-medium">{p.fio}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className={`text-xs px-2 py-1 rounded-full ${p.gender === 'Мужской' ? 'bg-blue-500/10 text-blue-400' : 'bg-pink-500/10 text-pink-400'}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${p.gender === 'Мужской' ? 'bg-primary/10 text-primary' : 'bg-pink-600/10 text-pink-600'}`}>
                         {p.gender === 'Мужской' ? 'М' : 'Ж'}
                       </span>
                     </td>

@@ -40,7 +40,7 @@ export default function AdminDashboard() {
             { label: 'Участников', value: stats.total_participants, color: 'text-primary' },
             { label: 'Клубов', value: stats.total_clubs, color: 'text-accent' },
             { label: 'Регионов', value: stats.total_regions, color: 'text-success' },
-            { label: 'Муж / Жен', value: `${stats.male_count} / ${stats.female_count}`, color: 'text-blue-400' },
+            { label: 'Муж / Жен', value: `${stats.male_count} / ${stats.female_count}`, color: 'text-primary-light' },
           ].map((s, i) => (
             <div key={i} className="bg-surface-light rounded-xl border border-border p-5 text-center">
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>

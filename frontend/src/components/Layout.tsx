@@ -34,25 +34,27 @@ export default function Layout() {
   const isActive = (path: string) => location.pathname === path
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-surface-light border-b border-border sticky top-0 z-50">
+    <div className="min-h-screen flex flex-col bg-surface-light">
+      <header className="bg-primary shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 no-underline">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
-              MT
+            <div className="w-9 h-9 bg-accent rounded flex items-center justify-center text-white font-bold text-sm tracking-wide">
+              ФМТ
             </div>
-            <span className="text-lg font-semibold text-text hidden sm:block">Muay Thai</span>
+            <div className="hidden sm:block">
+              <span className="text-sm font-semibold text-white/95 tracking-wide uppercase">Федерация Муайтай</span>
+            </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline ${
+                className={`px-3.5 py-2 rounded text-sm font-medium transition-colors no-underline ${
                   isActive(link.to)
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-text-secondary hover:text-text hover:bg-surface-lighter/50'
+                    ? 'bg-white/20 text-white'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {link.label}
@@ -61,18 +63,18 @@ export default function Layout() {
 
             {isAdmin && (
               <>
-                <div className="w-px h-6 bg-border mx-2" />
+                <div className="w-px h-5 bg-white/20 mx-2" />
                 {adminLinks.map((link) => (
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline ${
+                    className={`px-3.5 py-2 rounded text-sm font-medium transition-colors no-underline ${
                       isActive(link.to)
-                        ? 'bg-accent/10 text-accent'
-                        : 'text-text-secondary hover:text-text hover:bg-surface-lighter/50'
+                        ? 'bg-accent/30 text-accent'
+                        : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1.5">
                       <Shield className="w-3 h-3" />
                       {link.label}
                     </span>
@@ -80,7 +82,7 @@ export default function Layout() {
                 ))}
                 <button
                   onClick={logout}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-text-muted hover:text-danger transition-colors cursor-pointer bg-transparent border-none"
+                  className="px-3 py-2 rounded text-sm font-medium text-white/50 hover:text-danger transition-colors cursor-pointer bg-transparent border-none"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -90,7 +92,7 @@ export default function Layout() {
             {!isAdmin && (
               <Link
                 to="/login"
-                className="px-3 py-2 rounded-lg text-sm font-medium text-text-muted hover:text-text transition-colors no-underline"
+                className="px-3 py-2 rounded text-sm font-medium text-white/40 hover:text-white/70 transition-colors no-underline"
               >
                 <Shield className="w-4 h-4" />
               </Link>
@@ -98,7 +100,7 @@ export default function Layout() {
           </nav>
 
           <button
-            className="md:hidden p-2 text-text-secondary bg-transparent border-none cursor-pointer"
+            className="md:hidden p-2 text-white/70 bg-transparent border-none cursor-pointer"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -106,14 +108,14 @@ export default function Layout() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-border bg-surface-light px-4 py-3 space-y-1">
+          <div className="md:hidden border-t border-white/10 bg-primary-dark px-4 py-3 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
-                className={`block px-3 py-2 rounded-lg text-sm font-medium no-underline ${
-                  isActive(link.to) ? 'bg-primary/10 text-primary' : 'text-text-secondary'
+                className={`block px-3 py-2 rounded text-sm font-medium no-underline ${
+                  isActive(link.to) ? 'bg-white/15 text-white' : 'text-white/70'
                 }`}
               >
                 {link.label}
@@ -124,15 +126,15 @@ export default function Layout() {
                 key={link.to}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
-                className={`block px-3 py-2 rounded-lg text-sm font-medium no-underline ${
-                  isActive(link.to) ? 'bg-accent/10 text-accent' : 'text-text-secondary'
+                className={`block px-3 py-2 rounded text-sm font-medium no-underline ${
+                  isActive(link.to) ? 'bg-accent/20 text-accent' : 'text-white/70'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
             {!isAdmin && (
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-text-muted no-underline">
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="block px-3 py-2 rounded text-sm font-medium text-white/50 no-underline">
                 Вход для администраторов
               </Link>
             )}
@@ -144,8 +146,9 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-surface-light border-t border-border py-6 text-center text-text-muted text-sm">
-        <p>Чемпионат и Первенство Республики Башкортостан по муайтай</p>
+      <footer className="bg-primary text-white/60 py-8 text-center text-sm">
+        <p className="font-medium">Чемпионат и Первенство Республики Башкортостан по муайтай</p>
+        <p className="mt-1 text-white/40 text-xs">&copy; 2026 Федерация Муайтай РБ. Все права защищены.</p>
       </footer>
     </div>
   )
