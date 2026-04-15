@@ -328,7 +328,26 @@ def create_tables():
         migrate_age_category_table(cur)
         migrate_participant_table(cur)
         migrate_bracket_tables(cur)
-        
+
+        # Проверка схемы — быстрый сбой при отсутствии критичных колонок
+        required_columns = {
+            'participant': ['competition_id'],
+            'approved_grids': ['competition_id'],
+            'custom_brackets': ['competition_id'],
+        }
+        for table, cols in required_columns.items():
+            cur.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = %s",
+                (table,),
+            )
+            existing = {row[0] for row in cur.fetchall()}
+            missing = [c for c in cols if c not in existing]
+            if missing:
+                raise RuntimeError(
+                    f"Проверка схемы не прошла: {table}.{', '.join(missing)} отсутствует. "
+                    "Необходима миграция базы данных."
+                )
+
         cur.close()
         conn.commit()
         print("Проверка/создание таблиц завершено.")
