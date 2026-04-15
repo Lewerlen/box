@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from api.auth import get_current_admin
 from db.database import get_db_connection
+from db.cache import update_cache
 
 router = APIRouter()
 
@@ -20,9 +21,11 @@ class MergeRequest(BaseModel):
     target_id: int
 
 
-def _close(cur, conn):
+def _close(cur, conn, invalidate_cache=False):
     cur.close()
     conn.close()
+    if invalidate_cache:
+        update_cache()
 
 
 @router.get("/regions")
@@ -52,7 +55,7 @@ def create_region(data: CreateRequest, admin: str = Depends(get_current_admin)):
     cur.execute("INSERT INTO region (name) VALUES (%s) RETURNING id", (data.name.strip(),))
     new_id = cur.fetchone()[0]
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"id": new_id, "name": data.name.strip()}
 
 
@@ -70,7 +73,7 @@ def rename_region(region_id: int, data: RenameRequest, admin: str = Depends(get_
         raise HTTPException(status_code=400, detail="Регион с таким названием уже существует")
     cur.execute("UPDATE region SET name = %s WHERE id = %s", (data.name.strip(), region_id))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
 
 
@@ -92,7 +95,7 @@ def delete_region(region_id: int, admin: str = Depends(get_current_admin)):
     cur.execute("DELETE FROM city WHERE region_id = %s", (region_id,))
     cur.execute("DELETE FROM region WHERE id = %s", (region_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "deleted"}
 
 
@@ -116,7 +119,7 @@ def merge_region(region_id: int, data: MergeRequest, admin: str = Depends(get_cu
     cur.execute("UPDATE city SET region_id = %s WHERE region_id = %s", (data.target_id, region_id))
     cur.execute("DELETE FROM region WHERE id = %s", (region_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "merged", "affected": affected}
 
 
@@ -150,7 +153,7 @@ def create_city(data: CreateRequest, admin: str = Depends(get_current_admin)):
     cur.execute("INSERT INTO city (name, region_id) VALUES (%s, %s) RETURNING id", (data.name.strip(), data.parent_id))
     new_id = cur.fetchone()[0]
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"id": new_id, "name": data.name.strip()}
 
 
@@ -169,7 +172,7 @@ def rename_city(city_id: int, data: RenameRequest, admin: str = Depends(get_curr
         raise HTTPException(status_code=400, detail="Город с таким названием уже существует в этом регионе")
     cur.execute("UPDATE city SET name = %s WHERE id = %s", (data.name.strip(), city_id))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
 
 
@@ -190,7 +193,7 @@ def delete_city(city_id: int, admin: str = Depends(get_current_admin)):
     cur.execute("DELETE FROM club WHERE city_id = %s", (city_id,))
     cur.execute("DELETE FROM city WHERE id = %s", (city_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "deleted"}
 
 
@@ -219,7 +222,7 @@ def merge_city(city_id: int, data: MergeRequest, admin: str = Depends(get_curren
     cur.execute("UPDATE club SET city_id = %s WHERE city_id = %s", (data.target_id, city_id))
     cur.execute("DELETE FROM city WHERE id = %s", (city_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "merged", "affected": affected}
 
 
@@ -253,7 +256,7 @@ def create_club(data: CreateRequest, admin: str = Depends(get_current_admin)):
     cur.execute("INSERT INTO club (name, city_id) VALUES (%s, %s) RETURNING id", (data.name.strip(), data.parent_id))
     new_id = cur.fetchone()[0]
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"id": new_id, "name": data.name.strip()}
 
 
@@ -272,7 +275,7 @@ def rename_club(club_id: int, data: RenameRequest, admin: str = Depends(get_curr
         raise HTTPException(status_code=400, detail="Клуб с таким названием уже существует в этом городе")
     cur.execute("UPDATE club SET name = %s WHERE id = %s", (data.name.strip(), club_id))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
 
 
@@ -292,7 +295,7 @@ def delete_club(club_id: int, admin: str = Depends(get_current_admin)):
     cur.execute("DELETE FROM coach WHERE club_id = %s", (club_id,))
     cur.execute("DELETE FROM club WHERE id = %s", (club_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "deleted"}
 
 
@@ -321,7 +324,7 @@ def merge_club(club_id: int, data: MergeRequest, admin: str = Depends(get_curren
     cur.execute("UPDATE coach SET club_id = %s WHERE club_id = %s", (data.target_id, club_id))
     cur.execute("DELETE FROM club WHERE id = %s", (club_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "merged", "affected": affected}
 
 
@@ -355,7 +358,7 @@ def create_coach(data: CreateRequest, admin: str = Depends(get_current_admin)):
     cur.execute("INSERT INTO coach (name, club_id) VALUES (%s, %s) RETURNING id", (data.name.strip(), data.parent_id))
     new_id = cur.fetchone()[0]
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"id": new_id, "name": data.name.strip()}
 
 
@@ -374,7 +377,7 @@ def rename_coach(coach_id: int, data: RenameRequest, admin: str = Depends(get_cu
         raise HTTPException(status_code=400, detail="Тренер с таким именем уже существует в этом клубе")
     cur.execute("UPDATE coach SET name = %s WHERE id = %s", (data.name.strip(), coach_id))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "renamed"}
 
 
@@ -393,7 +396,7 @@ def delete_coach(coach_id: int, admin: str = Depends(get_current_admin)):
         raise HTTPException(status_code=400, detail=f"Нельзя удалить: {count} участник(ов) привязано. Сначала объедините.")
     cur.execute("DELETE FROM coach WHERE id = %s", (coach_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "deleted"}
 
 
@@ -421,5 +424,5 @@ def merge_coach(coach_id: int, data: MergeRequest, admin: str = Depends(get_curr
     cur.execute("UPDATE participant SET coach_id = %s WHERE coach_id = %s", (data.target_id, coach_id))
     cur.execute("DELETE FROM coach WHERE id = %s", (coach_id,))
     conn.commit()
-    _close(cur, conn)
+    _close(cur, conn, invalidate_cache=True)
     return {"status": "merged", "affected": affected}
