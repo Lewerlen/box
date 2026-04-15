@@ -670,14 +670,10 @@ export default function RegistrationPage() {
       </div>
 
       {step > 1 && step < 14 && (
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4">
           <button onClick={goBack}
             className="flex items-center gap-2 text-text-muted hover:text-text text-sm cursor-pointer bg-transparent border-none transition-colors">
             <ChevronLeft className="w-4 h-4" /> Назад
-          </button>
-          <button onClick={handleCancel}
-            className="flex items-center gap-2 text-danger/70 hover:text-danger text-sm cursor-pointer bg-transparent border-none transition-colors">
-            <X className="w-4 h-4" /> Отмена
           </button>
         </div>
       )}
