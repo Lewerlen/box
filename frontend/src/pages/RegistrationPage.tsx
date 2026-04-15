@@ -133,7 +133,10 @@ export default function RegistrationPage() {
       setAgeCategoryId(res.data.age_category.id)
       setAgeCategoryName(res.data.age_category.name)
       setError('')
-      setStep(4)
+      const next = new Set(skippedSteps)
+      next.add(4)
+      setSkippedSteps(next)
+      setStep(5)
     } catch {
       setError('Не удалось определить возрастную категорию для данной даты рождения')
     }
@@ -328,21 +331,13 @@ export default function RegistrationPage() {
                 </div>
               </div>
             </div>
+            {ageCategoryName && (
+              <div className="mb-4 flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
+                <span className="text-xs text-text-muted">Возрастная категория:</span>
+                <span className="font-semibold text-primary">{ageCategoryName}</span>
+              </div>
+            )}
             <button onClick={handleDobSubmit}
-              className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
-              Далее
-            </button>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div>
-            <label className="block text-sm text-text-secondary mb-2">Возрастная категория</label>
-            <div className="bg-surface-light border border-border rounded-lg px-4 py-3 mb-4">
-              <span className="text-text font-medium">{ageCategoryName}</span>
-              <span className="text-text-muted text-sm ml-2">(определена автоматически)</span>
-            </div>
-            <button onClick={() => setStep(5)}
               className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium cursor-pointer border-none transition-colors">
               Далее
             </button>
