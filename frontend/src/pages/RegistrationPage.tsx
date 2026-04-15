@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { registrationApi } from '../api'
 import { CheckCircle, ChevronLeft, ChevronDown, Loader2, X, SkipForward } from 'lucide-react'
 
@@ -95,6 +96,7 @@ function parseDateInput(input: string): { valid: boolean; iso: string; display: 
 }
 
 export default function RegistrationPage() {
+  const { id: competitionId } = useParams<{ id?: string }>()
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
@@ -299,6 +301,15 @@ export default function RegistrationPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      {competitionId && (
+        <Link
+          to={`/competition/${competitionId}`}
+          className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text mb-6 no-underline"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Назад к соревнованию
+        </Link>
+      )}
       <h1 className="text-2xl font-bold mb-2 text-text">Регистрация участника</h1>
       <p className="text-text-muted text-sm mb-6">
         Шаг {progressIndex + 1} из {progressTotal}: {STEP_LABELS[step]}

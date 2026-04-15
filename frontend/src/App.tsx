@@ -19,6 +19,9 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/competition/:id" element={<CompetitionPage />} />
+        <Route path="/competition/:id/register" element={<RegistrationPage />} />
+        <Route path="/competition/:id/participants" element={<ParticipantsPage />} />
+        <Route path="/competition/:id/brackets" element={<BracketsPage />} />
         <Route path="/participants" element={<ParticipantsPage />} />
         <Route path="/brackets" element={<BracketsPage />} />
         <Route path="/register" element={<RegistrationPage />} />

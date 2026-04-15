@@ -122,7 +122,7 @@ export default function CompetitionPage() {
       <div className="grid sm:grid-cols-3 gap-4">
         {isActive && (
           <Link
-            to="/register"
+            to={`/competition/${comp.id}/register`}
             className="group bg-accent hover:bg-accent-dark text-white rounded-xl p-6 no-underline flex flex-col gap-3 transition-all shadow-lg"
           >
             <UserPlus className="w-7 h-7" />
@@ -134,7 +134,7 @@ export default function CompetitionPage() {
         )}
 
         <Link
-          to="/participants"
+          to={`/competition/${comp.id}/participants`}
           className="group bg-surface hover:border-primary/40 border border-border-light rounded-xl p-6 no-underline flex flex-col gap-3 transition-all"
         >
           <Users className="w-7 h-7 text-primary" />
@@ -145,7 +145,7 @@ export default function CompetitionPage() {
         </Link>
 
         <Link
-          to="/brackets"
+          to={`/competition/${comp.id}/brackets`}
           className="group bg-surface hover:border-accent/40 border border-border-light rounded-xl p-6 no-underline flex flex-col gap-3 transition-all"
         >
           <Trophy className="w-7 h-7 text-accent" />

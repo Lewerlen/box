@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { publicApi } from '../api'
-import { Trophy } from 'lucide-react'
+import { Trophy, ChevronLeft } from 'lucide-react'
 
 interface ApprovedBracket {
   class_name: string
@@ -10,6 +11,7 @@ interface ApprovedBracket {
 }
 
 export default function BracketsPage() {
+  const { id: competitionId } = useParams<{ id?: string }>()
   const [brackets, setBrackets] = useState<ApprovedBracket[]>([])
   const [selected, setSelected] = useState<ApprovedBracket | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,6 +32,15 @@ export default function BracketsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {competitionId && (
+        <Link
+          to={`/competition/${competitionId}`}
+          className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text mb-6 no-underline"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Назад к соревнованию
+        </Link>
+      )}
       <h1 className="text-2xl font-bold mb-6">Турнирные сетки</h1>
 
       {loading ? (

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { publicApi } from '../api'
 import { Search, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
 
@@ -24,6 +25,7 @@ interface RefItem {
 }
 
 export default function ParticipantsPage() {
+  const { id: competitionId } = useParams<{ id?: string }>()
   const [participants, setParticipants] = useState<Participant[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -94,6 +96,15 @@ export default function ParticipantsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {competitionId && (
+        <Link
+          to={`/competition/${competitionId}`}
+          className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text mb-6 no-underline"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Назад к соревнованию
+        </Link>
+      )}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Участники</h1>
