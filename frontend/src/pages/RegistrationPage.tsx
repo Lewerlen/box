@@ -88,7 +88,7 @@ export default function RegistrationPage() {
   const [clubs, setClubs] = useState<RefItem[]>([])
   const [coaches, setCoaches] = useState<RefItem[]>([])
 
-  const [skippedSteps, setSkippedSteps] = useState<Set<number>>(new Set())
+  const [skippedSteps, setSkippedSteps] = useState<Set<number>>(new Set([4]))
 
   useEffect(() => {
     if (step === 5 && ageCategoryId) {
@@ -174,7 +174,7 @@ export default function RegistrationPage() {
     setOrderNumber(''); setRegionId(null); setRegionName(''); setCityId(null); setCityName('')
     setClubId(null); setClubName(''); setCoachName('')
     setManualRegion(''); setManualCity(''); setManualClub(''); setManualCoach('')
-    setManualMode({}); setSkippedSteps(new Set())
+    setManualMode({}); setSkippedSteps(new Set([4]))
     setError(''); setSuccess(null); setCancelled(false); setSubmitting(false)
   }
 
