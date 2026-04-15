@@ -314,7 +314,7 @@ export default function RegistrationPage() {
         <div className="bg-danger/10 border border-danger/30 text-danger rounded-lg px-4 py-3 mb-4 text-sm">{error}</div>
       )}
 
-      <div className="bg-surface rounded-xl border border-border-light shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-xl border border-border-light shadow-sm">
         <div className="p-6">
 
         {step === 1 && (
@@ -731,7 +731,7 @@ export default function RegistrationPage() {
         </div>
 
         {step > 1 && step < 14 && (
-          <div className="border-t border-border-light px-6 py-3">
+          <div className="border-t border-border-light px-6 py-3 rounded-b-xl">
             <button onClick={goBack}
               className="flex items-center gap-1.5 text-text-muted hover:text-primary text-sm cursor-pointer bg-transparent border-none transition-colors font-medium">
               <ChevronLeft className="w-4 h-4" /> Назад
