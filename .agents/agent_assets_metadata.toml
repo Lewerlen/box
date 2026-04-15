@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "TrPEs7F1ij4KSMm6e-aHy"
+uri = "file://frontend/public/fighter-left.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "8_VXxNCa6Kr1HE8VT8IMj"
+uri = "file://frontend/public/fighter-right.png"
+type = "image"
+title = "generated_image"
