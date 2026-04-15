@@ -16,6 +16,8 @@
   --color-text-muted: #8694a7;
   --color-success: #1a8754;
   --color-danger: #c62828;
+  --color-nav: #1e3a5f;
+  --color-nav-dark: #152c4a;
 }
 
 body {
@@ -41,7 +43,7 @@ html.dark {
   --color-primary-light: #3b6ba5;
   --color-accent: #d4a843;
   --color-accent-dark: #c8962e;
-  --color-surface: #141a24;
+  --color-surface: #111827;
   --color-surface-light: #1a2233;
   --color-surface-lighter: #243044;
   --color-border: #2d3a4e;
@@ -51,4 +53,6 @@ html.dark {
   --color-text-muted: #6b7a90;
   --color-success: #2eb872;
   --color-danger: #e53e3e;
+  --color-nav: #1e3a5f;
+  --color-nav-dark: #152c4a;
 }

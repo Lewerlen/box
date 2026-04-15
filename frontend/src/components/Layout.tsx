@@ -51,7 +51,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-light">
-      <header className="bg-primary shadow-md sticky top-0 z-50">
+      <header className="bg-nav shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 no-underline">
             <div className="w-9 h-9 bg-accent rounded flex items-center justify-center text-white font-bold text-sm tracking-wide">
@@ -141,7 +141,7 @@ export default function Layout() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-white/10 bg-primary-dark px-4 py-3 space-y-1">
+          <div className="md:hidden border-t border-white/10 bg-nav-dark px-4 py-3 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -179,7 +179,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-primary text-white/60 py-8 text-center text-sm">
+      <footer className="bg-nav text-white/60 py-8 text-center text-sm">
         <p className="font-medium">Чемпионат и Первенство Республики Башкортостан по муайтай</p>
         <p className="mt-1 text-white/40 text-xs">&copy; 2026 Федерация Муайтай РБ. Все права защищены.</p>
       </footer>
