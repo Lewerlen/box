@@ -55,7 +55,7 @@ export default function HomePage() {
       </section>
 
       {stats && (
-        <section className="max-w-7xl mx-auto px-4 -mt-10 relative z-10">
+        <section className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { icon: Users, label: 'Участников', value: stats.total_participants, color: 'text-primary' },
