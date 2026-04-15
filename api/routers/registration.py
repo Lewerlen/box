@@ -27,6 +27,8 @@ class RegistrationData(BaseModel):
     weight_category_id: int
     class_name: str
     rank_name: Optional[str] = None
+    rank_assigned_on: Optional[str] = None
+    order_number: Optional[str] = None
     region_name: str
     city_name: str
     club_name: str
@@ -108,6 +110,8 @@ def submit_registration(data: RegistrationData):
             "weight_category_name": None,
             "class_name": data.class_name,
             "rank_name": data.rank_name,
+            "rank_assigned_on": data.rank_assigned_on,
+            "order_number": data.order_number,
             "region_name": data.region_name,
             "city_name": data.city_name,
             "club_name": data.club_name,

@@ -41,6 +41,8 @@ interface RegistrationData {
   weight_category_id: number;
   class_name: string;
   rank_name: string | null;
+  rank_assigned_on: string | null;
+  order_number: string | null;
   region_name: string;
   city_name: string;
   club_name: string;
