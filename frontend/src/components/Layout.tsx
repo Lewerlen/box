@@ -1,12 +1,28 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { Menu, X, Shield, LogOut } from 'lucide-react'
+import { Menu, X, Shield, LogOut, Sun, Moon } from 'lucide-react'
 
 export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark'
+    }
+    return false
+  })
+
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [dark])
 
   useEffect(() => {
     setIsAdmin(!!localStorage.getItem('admin_token'))
@@ -97,14 +113,31 @@ export default function Layout() {
                 <Shield className="w-4 h-4" />
               </Link>
             )}
+
+            <div className="w-px h-5 bg-white/20 mx-2" />
+            <button
+              onClick={() => setDark(!dark)}
+              className="p-2 rounded text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer bg-transparent border-none"
+              title={dark ? 'Светлая тема' : 'Тёмная тема'}
+            >
+              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </nav>
 
-          <button
-            className="md:hidden p-2 text-white/70 bg-transparent border-none cursor-pointer"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={() => setDark(!dark)}
+              className="p-2 text-white/60 hover:text-white transition-colors cursor-pointer bg-transparent border-none"
+            >
+              {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button
+              className="p-2 text-white/70 bg-transparent border-none cursor-pointer"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {menuOpen && (

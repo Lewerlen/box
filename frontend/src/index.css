@@ -23,6 +23,7 @@ body {
   background: var(--color-surface-light);
   color: var(--color-text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 #root {
@@ -32,4 +33,22 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) var(--color-surface-light);
+}
+
+html.dark {
+  --color-primary: #2a5082;
+  --color-primary-dark: #1e3a5f;
+  --color-primary-light: #3b6ba5;
+  --color-accent: #d4a843;
+  --color-accent-dark: #c8962e;
+  --color-surface: #141a24;
+  --color-surface-light: #1a2233;
+  --color-surface-lighter: #243044;
+  --color-border: #2d3a4e;
+  --color-border-light: #253245;
+  --color-text: #e8ecf2;
+  --color-text-secondary: #a0aec0;
+  --color-text-muted: #6b7a90;
+  --color-success: #2eb872;
+  --color-danger: #e53e3e;
 }
