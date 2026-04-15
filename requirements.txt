@@ -14,3 +14,11 @@ passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
 uvicorn[standard]
+aiofiles
+bcrypt
+cryptography
+fastapi
+passlib
+python-jose
+python-multipart
+uvicorn
