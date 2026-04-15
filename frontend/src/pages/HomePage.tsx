@@ -23,7 +23,7 @@ export default function HomePage() {
       <section className="relative bg-nav overflow-hidden">
         <img src="/fighter-left.png" alt="" className="absolute left-0 md:left-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none" style={{filter: 'brightness(0) invert(1)'}} />
         <img src="/fighter-right.png" alt="" className="absolute right-0 md:right-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none" style={{filter: 'brightness(0) invert(1)'}} />
-        <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 py-10 md:py-16 text-center">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-nav-text leading-tight">
             Чемпионат и Первенство
             <br />
@@ -55,7 +55,7 @@ export default function HomePage() {
       </section>
 
       {stats && (
-        <section className="max-w-7xl mx-auto px-4 py-8">
+        <section className="max-w-7xl mx-auto px-4 pt-6 pb-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { icon: Users, label: 'Участников', value: stats.total_participants, color: 'text-primary' },
