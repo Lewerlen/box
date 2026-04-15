@@ -329,7 +329,7 @@ def create_tables():
         migrate_participant_table(cur)
         migrate_bracket_tables(cur)
 
-        # Проверка схемы — быстрый сбой при отсутствии критичных колонок
+        # Проверка схемы — быстрый сбой при отсутствии критичных колонок/ограничений
         required_columns = {
             'participant': ['competition_id'],
             'approved_grids': ['competition_id'],
@@ -345,6 +345,25 @@ def create_tables():
             if missing:
                 raise RuntimeError(
                     f"Проверка схемы не прошла: {table}.{', '.join(missing)} отсутствует. "
+                    "Необходима миграция базы данных."
+                )
+
+        required_constraints = [
+            ('participant', 'participant_fio_dob_competition_unique'),
+            ('approved_grids', 'approved_grids_comp_unique'),
+            ('custom_brackets', 'custom_brackets_comp_unique'),
+        ]
+        cur.execute("""
+            SELECT table_name, constraint_name
+            FROM information_schema.table_constraints
+            WHERE constraint_type = 'UNIQUE'
+              AND table_name = ANY(%s)
+        """, ([t for t, _ in required_constraints],))
+        found_constraints = {(row[0], row[1]) for row in cur.fetchall()}
+        for table, cname in required_constraints:
+            if (table, cname) not in found_constraints:
+                raise RuntimeError(
+                    f"Проверка схемы не прошла: ограничение {cname} на таблице {table} отсутствует. "
                     "Необходима миграция базы данных."
                 )
 
