@@ -126,17 +126,17 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="relative bg-nav overflow-hidden">
+      <section className="relative bg-nav overflow-x-hidden min-h-[240px] md:min-h-[300px]">
         <img
           src="/fighter-left.png"
           alt=""
-          className="absolute left-0 md:left-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none"
+          className="absolute left-0 md:left-8 bottom-0 h-48 md:h-80 opacity-15 object-contain object-bottom pointer-events-none select-none"
           style={{ filter: 'brightness(0) invert(1)' }}
         />
         <img
           src="/fighter-right.png"
           alt=""
-          className="absolute right-0 md:right-8 bottom-0 h-64 md:h-96 opacity-15 object-contain pointer-events-none select-none"
+          className="absolute right-0 md:right-8 bottom-0 h-48 md:h-80 opacity-15 object-contain object-bottom pointer-events-none select-none"
           style={{ filter: 'brightness(0) invert(1)' }}
         />
         <div className="relative max-w-7xl mx-auto px-4 py-10 md:py-14 text-center">
