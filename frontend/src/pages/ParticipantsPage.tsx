@@ -111,6 +111,7 @@ export default function ParticipantsPage() {
   const effectiveCompId = competitionId ?? (selectedCompId ? String(selectedCompId) : undefined)
 
   const load = useCallback(() => {
+    if (!competitionId && selectedCompId === null) return
     setLoading(true)
     const params: Record<string, string | number> = { page }
     if (search) params.search = search
@@ -127,7 +128,7 @@ export default function ParticipantsPage() {
       setTotalPages(r.data.total_pages)
       setLoading(false)
     })
-  }, [page, search, gender, ageCategoryId, weightCategoryId, classId, clubId, regionId, effectiveCompId])
+  }, [page, search, gender, ageCategoryId, weightCategoryId, classId, clubId, regionId, effectiveCompId, competitionId, selectedCompId])
 
   useEffect(() => { load() }, [load])
 

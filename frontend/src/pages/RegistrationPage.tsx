@@ -376,9 +376,8 @@ export default function RegistrationPage() {
             value={selectedCompetitionId ?? ''}
             onChange={e => {
               const newId = e.target.value ? Number(e.target.value) : null
+              resetForm()
               setSelectedCompetitionId(newId)
-              setStep(1)
-              setError('')
             }}
             className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
           >
