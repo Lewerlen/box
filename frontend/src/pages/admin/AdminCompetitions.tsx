@@ -67,6 +67,13 @@ function fromDateTimeLocal(str: string): string | null {
   return new Date(str).toISOString()
 }
 
+function isEventPast(dateEnd: string | null | undefined): boolean {
+  if (!dateEnd) return false
+  const end = new Date(dateEnd)
+  end.setHours(23, 59, 59, 999)
+  return end < new Date()
+}
+
 const emptyForm = {
   name: '',
   discipline: 'muay_thai',
@@ -194,6 +201,8 @@ export default function AdminCompetitions() {
   }
 
   const toggleRegClosed = async (c: Competition) => {
+    const msg = c.registration_closed ? 'Открыть регистрацию?' : 'Закрыть регистрацию?'
+    if (!confirm(msg)) return
     try {
       await competitionsApi.update(c.id, { registration_closed: !c.registration_closed })
       load()
@@ -299,7 +308,7 @@ export default function AdminCompetitions() {
               />
             </div>
 
-            {editId !== null && (
+            {editId !== null && !isEventPast(form.date_end) && (
               <div className="flex items-center gap-3 pt-5">
                 <input
                   type="checkbox"
@@ -405,13 +414,15 @@ export default function AdminCompetitions() {
                 >
                   <Settings className="w-3.5 h-3.5" /> Управление
                 </button>
-                <button
-                  onClick={() => toggleRegClosed(c)}
-                  className={`p-2 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${c.registration_closed ? 'text-danger hover:bg-danger/10' : 'text-text-dim hover:text-success hover:bg-success/10'}`}
-                  title={c.registration_closed ? 'Открыть регистрацию' : 'Закрыть регистрацию'}
-                >
-                  {c.registration_closed ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                </button>
+                {!isEventPast(c.date_end) && (
+                  <button
+                    onClick={() => toggleRegClosed(c)}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${c.registration_closed ? 'text-danger hover:bg-danger/10' : 'text-text-dim hover:text-success hover:bg-success/10'}`}
+                    title={c.registration_closed ? 'Открыть регистрацию' : 'Закрыть регистрацию'}
+                  >
+                    {c.registration_closed ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                  </button>
+                )}
                 <button
                   onClick={() => openEdit(c)}
                   className="p-2 text-text-dim hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer bg-transparent border-none"

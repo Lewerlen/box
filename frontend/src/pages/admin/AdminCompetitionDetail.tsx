@@ -117,6 +117,13 @@ function fromDateTimeLocal(str: string): string | null {
   return new Date(str).toISOString()
 }
 
+function isEventPast(dateEnd: string | null | undefined): boolean {
+  if (!dateEnd) return false
+  const end = new Date(dateEnd)
+  end.setHours(23, 59, 59, 999)
+  return end < new Date()
+}
+
 const emptyForm = {
   name: '',
   discipline: 'muay_thai',
@@ -273,12 +280,14 @@ export default function AdminCompetitionDetail() {
                 <input type="datetime-local" value={form.registration_deadline} onChange={(e) => setForm({ ...form, registration_deadline: e.target.value })}
                   className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary" />
               </div>
-              <div className="flex items-center gap-3 pt-5">
-                <input type="checkbox" id="reg_closed_edit" checked={form.registration_closed}
-                  onChange={(e) => setForm({ ...form, registration_closed: e.target.checked })}
-                  className="w-4 h-4 accent-danger cursor-pointer" />
-                <label htmlFor="reg_closed_edit" className="text-sm text-text cursor-pointer select-none">Закрыть регистрацию вручную</label>
-              </div>
+              {!isEventPast(form.date_end) && (
+                <div className="flex items-center gap-3 pt-5">
+                  <input type="checkbox" id="reg_closed_edit" checked={form.registration_closed}
+                    onChange={(e) => setForm({ ...form, registration_closed: e.target.checked })}
+                    className="w-4 h-4 accent-danger cursor-pointer" />
+                  <label htmlFor="reg_closed_edit" className="text-sm text-text cursor-pointer select-none">Закрыть регистрацию вручную</label>
+                </div>
+              )}
               <div className="sm:col-span-2">
                 <label className="block text-sm text-text-muted mb-1">Место проведения</label>
                 <input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })}
