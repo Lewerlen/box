@@ -233,22 +233,55 @@ export default function AdminBrackets() {
     )
   }
 
+  const handleDownloadExcel = (type: 'preliminary' | 'weigh-in' | 'brackets' | 'protocol') => {
+    adminApi.downloadExcel(type, competitionId).catch(() => {})
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Управление сетками</h1>
-        {competitions.length > 1 && (
-          <select
-            value={competitionId ?? ''}
-            onChange={(e) => setCompetitionId(e.target.value ? Number(e.target.value) : undefined)}
-            className="px-3 py-2 bg-surface-light border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary/50"
-          >
-            <option value="">Все соревнования</option>
-            {competitions.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        )}
+        <div className="flex items-center gap-3">
+          {competitions.length > 1 && (
+            <select
+              value={competitionId ?? ''}
+              onChange={(e) => setCompetitionId(e.target.value ? Number(e.target.value) : undefined)}
+              className="px-3 py-2 bg-surface-light border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary/50"
+            >
+              <option value="">Все соревнования</option>
+              {competitions.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={() => handleDownloadExcel('preliminary')}
+          className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-border rounded-lg text-text-secondary text-sm font-medium cursor-pointer hover:border-primary/30 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Предварительный список
+        </button>
+        <button
+          onClick={() => handleDownloadExcel('weigh-in')}
+          className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-border rounded-lg text-text-secondary text-sm font-medium cursor-pointer hover:border-primary/30 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Список взвешивания
+        </button>
+        <button
+          onClick={() => handleDownloadExcel('brackets')}
+          className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-border rounded-lg text-text-secondary text-sm font-medium cursor-pointer hover:border-primary/30 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Сетки (Excel)
+        </button>
+        <button
+          onClick={() => handleDownloadExcel('protocol')}
+          className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-border rounded-lg text-text-secondary text-sm font-medium cursor-pointer hover:border-primary/30 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Протокол
+        </button>
       </div>
 
       {loading ? (
