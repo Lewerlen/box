@@ -173,7 +173,7 @@ export default function AdminCompetitions() {
         status: form.status,
         registration_deadline: fromDateTimeLocal(form.registration_deadline),
         registration_open_at: fromDateTimeLocal(form.registration_open_at),
-        registration_closed: form.registration_closed,
+        registration_closed: editId !== null ? form.registration_closed : false,
       }
       if (editId !== null) {
         await competitionsApi.update(editId, payload)
