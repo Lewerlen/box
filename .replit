@@ -80,6 +80,7 @@ externalPort = 8000
 [userenv]
 
 [userenv.shared]
+ADMIN_USERNAME = "admin"
 
 [postMerge]
 path = "scripts/post-merge.sh"
