@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { publicApi, competitionsApi } from '../api'
-import { Search, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Filter, X, ChevronDown } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -164,13 +164,14 @@ export default function ParticipantsPage() {
           <label className="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
             Соревнование
           </label>
+          <div className="relative">
           <select
             value={selectedCompId ?? ''}
             onChange={(e) => {
               setSelectedCompId(e.target.value ? Number(e.target.value) : null)
               setPage(1)
             }}
-            className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
+            className="w-full px-3 py-2.5 pr-9 appearance-none bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
           >
             {competitions.map((c) => (
               <option key={c.id} value={c.id}>
@@ -178,6 +179,8 @@ export default function ParticipantsPage() {
               </option>
             ))}
           </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+          </div>
         </div>
       )}
 

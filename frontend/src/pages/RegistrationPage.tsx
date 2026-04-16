@@ -372,6 +372,7 @@ export default function RegistrationPage() {
           <label className="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
             Соревнование
           </label>
+          <div className="relative">
           <select
             value={selectedCompetitionId ?? ''}
             onChange={e => {
@@ -379,7 +380,7 @@ export default function RegistrationPage() {
               resetForm()
               setSelectedCompetitionId(newId)
             }}
-            className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
+            className="w-full px-3 py-2.5 pr-9 appearance-none bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
           >
             {competitions.map(c => (
               <option key={c.id} value={c.id}>
@@ -387,6 +388,8 @@ export default function RegistrationPage() {
               </option>
             ))}
           </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+          </div>
         </div>
       )}
 
