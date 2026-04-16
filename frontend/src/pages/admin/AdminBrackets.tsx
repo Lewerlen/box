@@ -41,7 +41,7 @@ export default function AdminBrackets() {
     competitionsApi.getAll().then((r) => {
       const list: Competition[] = r.data
       setCompetitions(list)
-      if (list.length === 1) setCompetitionId(list[0].id)
+      if (list.length >= 1) setCompetitionId(list[0].id)
     })
   }, [])
 
@@ -159,17 +159,23 @@ export default function AdminBrackets() {
         <div className="grid lg:grid-cols-[300px_1fr] gap-6">
           <div className="space-y-4">
             <div className="bg-surface-light rounded-xl border border-border p-4">
-              <h3 className="text-sm font-semibold text-text-secondary mb-3">Участники (нажмите для swap)</h3>
+              <h3 className="text-sm font-semibold text-text-secondary mb-3">
+                Участники{competitionId !== undefined ? ' (нажмите для swap)' : ''}
+              </h3>
+              {competitionId === undefined && (
+                <p className="text-xs text-warning mb-2">Выберите соревнование для редактирования сетки</p>
+              )}
               <div className="space-y-1">
                 {bracket.map((p, i) => (
                   <button
                     key={i}
-                    onClick={() => p && handleSwap(i)}
-                    disabled={!p || actionLoading}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm cursor-pointer border transition-all ${
+                    onClick={() => p && competitionId !== undefined && handleSwap(i)}
+                    disabled={!p || actionLoading || competitionId === undefined}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition-all ${
                       !p ? 'bg-surface-lighter/30 text-text-muted border-transparent cursor-default' :
-                      swapFrom === i ? 'bg-accent/10 border-accent/50 text-accent' :
-                      'bg-surface border-border hover:border-primary/30 text-text'
+                      competitionId === undefined ? 'bg-surface border-border text-text cursor-default' :
+                      swapFrom === i ? 'bg-accent/10 border-accent/50 text-accent cursor-pointer' :
+                      'bg-surface border-border hover:border-primary/30 text-text cursor-pointer'
                     }`}
                   >
                     {p ? (
@@ -191,11 +197,11 @@ export default function AdminBrackets() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <button onClick={handleRegenerate} disabled={actionLoading}
+              <button onClick={handleRegenerate} disabled={actionLoading || competitionId === undefined}
                 className="flex items-center justify-center gap-2 py-2.5 bg-surface-light border border-border rounded-lg text-text-secondary text-sm font-medium cursor-pointer hover:border-primary/30 transition-colors disabled:opacity-50">
                 <RefreshCw className="w-4 h-4" /> Перегенерировать
               </button>
-              <button onClick={handleToggleApproval} disabled={actionLoading}
+              <button onClick={handleToggleApproval} disabled={actionLoading || competitionId === undefined}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium cursor-pointer border-none transition-colors disabled:opacity-50 ${
                   isApproved ? 'bg-danger/10 text-danger hover:bg-danger/20' : 'bg-success/10 text-success hover:bg-success/20'
                 }`}>
