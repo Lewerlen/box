@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { registrationApi, competitionsApi } from '../api'
 import { CheckCircle, ChevronLeft, ChevronDown, Loader2, X, SkipForward, Trophy } from 'lucide-react'
+import DeadlineBadge from '../components/DeadlineBadge'
 
 interface CustomSelectProps {
   value: number
@@ -381,6 +382,7 @@ export default function RegistrationPage() {
         <div className="mb-6 bg-surface-light rounded-xl border border-border px-4 py-3">
           <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-0.5">Соревнование</p>
           <p className="text-text text-sm font-medium">{selectedCompObj.name}</p>
+          <DeadlineBadge deadline={selectedCompObj.registration_deadline} />
         </div>
       )}
 
@@ -405,6 +407,7 @@ export default function RegistrationPage() {
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
           </div>
+          {selectedCompObj && <DeadlineBadge deadline={selectedCompObj.registration_deadline} className="mt-2" />}
         </div>
       )}
 

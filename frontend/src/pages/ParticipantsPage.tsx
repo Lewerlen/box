@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { publicApi, competitionsApi } from '../api'
 import { Search, ChevronLeft, ChevronRight, Filter, X, ChevronDown } from 'lucide-react'
+import DeadlineBadge from '../components/DeadlineBadge'
 
 interface Competition {
   id: number
@@ -12,6 +13,7 @@ interface Competition {
   location: string | null
   status: 'active' | 'upcoming' | 'finished'
   participants_count: number
+  registration_deadline: string | null
 }
 
 interface Participant {
@@ -181,6 +183,7 @@ export default function ParticipantsPage() {
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
           </div>
+          {selectedComp?.status === 'active' && <DeadlineBadge deadline={selectedComp.registration_deadline} className="mt-2" />}
         </div>
       )}
 

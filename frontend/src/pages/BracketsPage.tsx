@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { publicApi, competitionsApi } from '../api'
 import { Trophy, ChevronLeft, ChevronDown } from 'lucide-react'
+import DeadlineBadge from '../components/DeadlineBadge'
 
 interface Competition {
   id: number
@@ -12,6 +13,7 @@ interface Competition {
   location: string | null
   status: 'active' | 'upcoming' | 'finished'
   participants_count: number
+  registration_deadline: string | null
 }
 
 interface ApprovedBracket {
@@ -117,6 +119,7 @@ export default function BracketsPage() {
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
           </div>
+          {selectedComp?.status === 'active' && <DeadlineBadge deadline={selectedComp.registration_deadline} className="mt-2" />}
         </div>
       )}
 
