@@ -362,7 +362,7 @@ export default function RegistrationPage() {
 
   const openCompetitions = competitions.filter(isRegistrationOpen)
   const selectedCompObj = competitions.find(c => c.id === selectedCompetitionId) ?? null
-  const showForm = competitionId ? true : selectedCompObj !== null
+  const showForm = competitionId ? true : selectedCompObj !== null && isRegistrationOpen(selectedCompObj)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
