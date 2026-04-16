@@ -645,7 +645,7 @@ def admin_get_bracket_image(
         "line4": f"{weight_name} кг",
     }
 
-    safe_name = f"{class_name}_{gender}_{age_category_name}_{weight_name}".replace(" ", "_").replace("+", "plus")
+    safe_name = f"{competition_id}_{class_name}_{gender}_{age_category_name}_{weight_name}".replace(" ", "_").replace("+", "plus")
     file_path = os.path.join(TEMP_DIR, f"bracket_{safe_name}.png")
     draw_bracket_image(seeded, file_path, header_info=header_info)
 

@@ -293,7 +293,7 @@ def get_bracket_image(
 
     temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "temp_files")
     os.makedirs(temp_dir, exist_ok=True)
-    safe_name = f"{class_name}_{gender}_{age_category_name}_{weight_name}".replace(" ", "_").replace("+", "plus")
+    safe_name = f"{competition_id}_{class_name}_{gender}_{age_category_name}_{weight_name}".replace(" ", "_").replace("+", "plus")
     file_path = os.path.join(temp_dir, f"bracket_{safe_name}.png")
 
     draw_bracket_image(seeded, file_path, header_info=header_info)
