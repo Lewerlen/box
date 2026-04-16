@@ -12,6 +12,7 @@ import AdminParticipants from './pages/admin/AdminParticipants'
 import AdminBrackets from './pages/admin/AdminBrackets'
 import AdminReferences from './pages/admin/AdminReferences'
 import AdminCompetitions from './pages/admin/AdminCompetitions'
+import AdminCompetitionDetail from './pages/admin/AdminCompetitionDetail'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/admin/brackets" element={<AdminBrackets />} />
           <Route path="/admin/references" element={<AdminReferences />} />
           <Route path="/admin/competitions" element={<AdminCompetitions />} />
+          <Route path="/admin/competitions/:id" element={<AdminCompetitionDetail />} />
         </Route>
       </Route>
     </Routes>

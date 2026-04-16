@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api, { competitionsApi } from '../../api'
-import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock, Settings } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -59,6 +60,7 @@ const emptyForm = {
 }
 
 export default function AdminCompetitions() {
+  const navigate = useNavigate()
   const [competitions, setCompetitions] = useState<Competition[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -329,6 +331,13 @@ export default function AdminCompetitions() {
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => navigate(`/admin/competitions/${c.id}`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent border border-accent/30 hover:bg-accent/10 rounded-lg transition-colors cursor-pointer bg-transparent"
+                  title="Управление соревнованием"
+                >
+                  <Settings className="w-3.5 h-3.5" /> Управление
+                </button>
                 <button
                   onClick={() => toggleRegClosed(c)}
                   className={`p-2 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${c.registration_closed ? 'text-danger hover:bg-danger/10' : 'text-text-dim hover:text-success hover:bg-success/10'}`}
