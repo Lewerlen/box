@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useBlocker } from 'react-router-dom'
 import api, { competitionsApi } from '../../api'
 import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock, Settings } from 'lucide-react'
 
@@ -66,9 +66,27 @@ export default function AdminCompetitions() {
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [form, setForm] = useState({ ...emptyForm })
+  const [initialForm, setInitialForm] = useState({ ...emptyForm })
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [error, setError] = useState('')
+
+  const isDirty = showForm && JSON.stringify(form) !== JSON.stringify(initialForm)
+
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
+
+  useBlocker(() => {
+    if (!isDirty) return false
+    return !window.confirm('Есть несохранённые изменения. Закрыть без сохранения?')
+  })
 
   const load = () => {
     api.get('/admin/competitions')
@@ -79,16 +97,22 @@ export default function AdminCompetitions() {
 
   useEffect(() => { load() }, [])
 
+  const confirmDiscardIfDirty = () =>
+    !isDirty || window.confirm('Есть несохранённые изменения. Закрыть без сохранения?')
+
   const openCreate = () => {
+    if (!confirmDiscardIfDirty()) return
     setEditId(null)
     setForm({ ...emptyForm })
+    setInitialForm({ ...emptyForm })
     setError('')
     setShowForm(true)
   }
 
   const openEdit = (c: Competition) => {
+    if (!confirmDiscardIfDirty()) return
     setEditId(c.id)
-    setForm({
+    const formValues = {
       name: c.name,
       discipline: c.discipline,
       date_start: c.date_start ?? '',
@@ -97,9 +121,16 @@ export default function AdminCompetitions() {
       status: c.status,
       registration_deadline: c.registration_deadline ?? '',
       registration_closed: c.registration_closed,
-    })
+    }
+    setForm(formValues)
+    setInitialForm(formValues)
     setError('')
     setShowForm(true)
+  }
+
+  const handleCancel = () => {
+    if (!confirmDiscardIfDirty()) return
+    setShowForm(false)
   }
 
   const handleSave = async () => {
@@ -278,7 +309,7 @@ export default function AdminCompetitions() {
               {editId !== null ? 'Сохранить' : 'Создать'}
             </button>
             <button
-              onClick={() => setShowForm(false)}
+              onClick={handleCancel}
               className="flex items-center gap-2 px-4 py-2 bg-surface-light border border-border hover:border-border-light text-text-muted rounded-lg text-sm font-medium transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
