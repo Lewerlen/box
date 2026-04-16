@@ -169,11 +169,20 @@ export default function AdminParticipants() {
           >
             Скачать Excel
           </button>
-          <label className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg text-sm font-medium cursor-pointer hover:bg-accent/20 transition-colors">
-            <Upload className="w-4 h-4" />
-            {csvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Импорт CSV'}
-            <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
-          </label>
+          <div className="flex flex-col items-end gap-1">
+            <label className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg text-sm font-medium cursor-pointer hover:bg-accent/20 transition-colors">
+              <Upload className="w-4 h-4" />
+              {csvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Импорт CSV'}
+              <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
+            </label>
+            {competitionId ? (
+              <p className="text-xs text-accent">
+                Участники будут привязаны к: <span className="font-medium">{competitions.find(c => String(c.id) === competitionId)?.name ?? '...'}</span>
+              </p>
+            ) : (
+              <p className="text-xs text-text-muted">Без привязки к соревнованию</p>
+            )}
+          </div>
         </div>
       </div>
 
