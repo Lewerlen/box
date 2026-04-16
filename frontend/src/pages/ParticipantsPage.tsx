@@ -1,7 +1,18 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { publicApi } from '../api'
+import { publicApi, competitionsApi } from '../api'
 import { Search, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
+
+interface Competition {
+  id: number
+  name: string
+  discipline: string
+  date_start: string | null
+  date_end: string | null
+  location: string | null
+  status: 'active' | 'upcoming' | 'finished'
+  participants_count: number
+}
 
 interface Participant {
   id: number
@@ -24,8 +35,33 @@ interface RefItem {
   gender?: string
 }
 
+function pickBestCompetition(list: Competition[]): Competition | null {
+  if (list.length === 0) return null
+  const sort = (arr: Competition[]) =>
+    [...arr].sort((a, b) => {
+      if (!a.date_start) return 1
+      if (!b.date_start) return -1
+      return new Date(a.date_start).getTime() - new Date(b.date_start).getTime()
+    })
+  const active = list.filter(c => c.status === 'active')
+  if (active.length > 0) return sort(active)[0]
+  const upcoming = list.filter(c => c.status === 'upcoming')
+  if (upcoming.length > 0) return sort(upcoming)[0]
+  return sort(list)[0]
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  active: 'Идёт регистрация',
+  upcoming: 'Скоро',
+  finished: 'Завершено',
+}
+
 export default function ParticipantsPage() {
   const { id: competitionId } = useParams<{ id?: string }>()
+
+  const [competitions, setCompetitions] = useState<Competition[]>([])
+  const [selectedCompId, setSelectedCompId] = useState<number | null>(null)
+
   const [participants, setParticipants] = useState<Participant[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -46,6 +82,17 @@ export default function ParticipantsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!competitionId) {
+      competitionsApi.getAll().then((r) => {
+        const list = r.data as Competition[]
+        setCompetitions(list)
+        const best = pickBestCompetition(list)
+        if (best) setSelectedCompId(best.id)
+      }).catch(() => {})
+    }
+  }, [competitionId])
+
+  useEffect(() => {
     publicApi.getAgeCategories().then((r) => setAgeCategories(r.data))
     publicApi.getClasses().then((r) => setClasses(r.data))
     publicApi.getClubs().then((r) => setClubs(r.data))
@@ -61,6 +108,8 @@ export default function ParticipantsPage() {
     }
   }, [ageCategoryId])
 
+  const effectiveCompId = competitionId ?? (selectedCompId ? String(selectedCompId) : undefined)
+
   const load = useCallback(() => {
     setLoading(true)
     const params: Record<string, string | number> = { page }
@@ -71,14 +120,14 @@ export default function ParticipantsPage() {
     if (classId) params.class_id = classId
     if (clubId) params.club_id = clubId
     if (regionId) params.region_id = regionId
-    if (competitionId) params.competition_id = competitionId
+    if (effectiveCompId) params.competition_id = effectiveCompId
     publicApi.getParticipants(params).then((r) => {
       setParticipants(r.data.participants)
       setTotal(r.data.total)
       setTotalPages(r.data.total_pages)
       setLoading(false)
     })
-  }, [page, search, gender, ageCategoryId, weightCategoryId, classId, clubId, regionId, competitionId])
+  }, [page, search, gender, ageCategoryId, weightCategoryId, classId, clubId, regionId, effectiveCompId])
 
   useEffect(() => { load() }, [load])
 
@@ -95,6 +144,8 @@ export default function ParticipantsPage() {
 
   const hasFilters = gender || ageCategoryId || weightCategoryId || classId || clubId || regionId
 
+  const selectedComp = competitions.find(c => c.id === selectedCompId)
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {competitionId && (
@@ -106,9 +157,35 @@ export default function ParticipantsPage() {
           Назад к соревнованию
         </Link>
       )}
+
+      {!competitionId && competitions.length > 0 && (
+        <div className="mb-6 bg-surface-light rounded-xl border border-border p-4">
+          <label className="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
+            Соревнование
+          </label>
+          <select
+            value={selectedCompId ?? ''}
+            onChange={(e) => {
+              setSelectedCompId(e.target.value ? Number(e.target.value) : null)
+              setPage(1)
+            }}
+            className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
+          >
+            {competitions.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}{c.status ? ` — ${STATUS_LABEL[c.status] ?? c.status}` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Участники</h1>
+          {!competitionId && selectedComp && (
+            <p className="text-text-muted text-sm mt-0.5">{selectedComp.name}</p>
+          )}
           <p className="text-text-muted text-sm mt-1">Всего: {total}</p>
         </div>
         <button

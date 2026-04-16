@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { registrationApi, competitionsApi } from '../api'
-import { CheckCircle, ChevronLeft, ChevronDown, Loader2, X, SkipForward } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronDown, Loader2, X, SkipForward, Trophy } from 'lucide-react'
 
 interface CustomSelectProps {
   value: number
@@ -98,7 +98,33 @@ function parseDateInput(input: string): { valid: boolean; iso: string; display: 
 interface Competition {
   id: number
   name: string
-  status: string
+  discipline: string
+  date_start: string | null
+  date_end: string | null
+  location: string | null
+  status: 'active' | 'upcoming' | 'finished'
+  participants_count: number
+}
+
+function pickBestCompetition(list: Competition[]): Competition | null {
+  if (list.length === 0) return null
+  const sort = (arr: Competition[]) =>
+    [...arr].sort((a, b) => {
+      if (!a.date_start) return 1
+      if (!b.date_start) return -1
+      return new Date(a.date_start).getTime() - new Date(b.date_start).getTime()
+    })
+  const active = list.filter(c => c.status === 'active')
+  if (active.length > 0) return sort(active)[0]
+  const upcoming = list.filter(c => c.status === 'upcoming')
+  if (upcoming.length > 0) return sort(upcoming)[0]
+  return sort(list)[0]
+}
+
+const COMP_STATUS_LABEL: Record<string, string> = {
+  active: 'Идёт регистрация',
+  upcoming: 'Скоро',
+  finished: 'Завершено',
 }
 
 export default function RegistrationPage() {
@@ -155,8 +181,10 @@ export default function RegistrationPage() {
   useEffect(() => {
     if (!competitionId) {
       competitionsApi.getAll().then((r) => {
-        const active = (r.data as Competition[]).filter(c => c.status === 'active' || c.status === 'upcoming')
-        setCompetitions(active)
+        const list = r.data as Competition[]
+        setCompetitions(list)
+        const best = pickBestCompetition(list)
+        if (best) setSelectedCompetitionId(best.id)
       }).catch(() => {})
     }
   }, [competitionId])
@@ -321,6 +349,11 @@ export default function RegistrationPage() {
   const finalClub = clubName || manualClub
   const finalCoach = coachName || manualCoach
 
+  const selectedCompObj = competitions.find(c => c.id === selectedCompetitionId) ?? null
+  const showForm = competitionId
+    ? true
+    : !selectedCompObj || selectedCompObj.status === 'active'
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {competitionId && (
@@ -335,38 +368,68 @@ export default function RegistrationPage() {
       <h1 className="text-2xl font-bold mb-2 text-text">Регистрация участника</h1>
 
       {!competitionId && competitions.length > 0 && (
-        <div className="mb-6 p-4 bg-surface-light border border-border rounded-xl">
-          <label className="block text-sm font-medium text-text mb-2">
-            Соревнование <span className="text-red-500">*</span>
+        <div className="mb-6 bg-surface-light rounded-xl border border-border p-4">
+          <label className="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
+            Соревнование
           </label>
           <select
             value={selectedCompetitionId ?? ''}
-            onChange={e => setSelectedCompetitionId(e.target.value ? Number(e.target.value) : null)}
+            onChange={e => {
+              const newId = e.target.value ? Number(e.target.value) : null
+              setSelectedCompetitionId(newId)
+              setStep(1)
+              setError('')
+            }}
             className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
           >
-            <option value="">— Выберите соревнование —</option>
             {competitions.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}{c.status ? ` — ${COMP_STATUS_LABEL[c.status] ?? c.status}` : ''}
+              </option>
             ))}
           </select>
         </div>
       )}
 
-      <p className="text-text-muted text-sm mb-6">
-        Шаг {progressIndex + 1} из {progressTotal}: {STEP_LABELS[step]}
-      </p>
+      {!competitionId && selectedCompetitionId && (() => {
+        const sc = competitions.find(c => c.id === selectedCompetitionId)
+        if (sc && sc.status !== 'active') {
+          return (
+            <div className="bg-surface-light rounded-xl border border-border p-8 text-center">
+              <Trophy className="w-12 h-12 mx-auto mb-3 text-text-muted" />
+              <p className="text-text font-semibold text-lg mb-1">
+                {sc.status === 'upcoming' ? 'Регистрация ещё не открыта' : 'Регистрация завершена'}
+              </p>
+              <p className="text-text-muted text-sm">
+                {sc.status === 'upcoming'
+                  ? 'Регистрация на это соревнование пока не началась. Следите за обновлениями.'
+                  : 'Приём заявок на это соревнование закрыт.'}
+              </p>
+            </div>
+          )
+        }
+        return null
+      })()}
 
-      <div className="flex gap-1 mb-6">
-        {activeSteps.map((s, i) => (
-          <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= progressIndex ? 'bg-primary' : 'bg-surface-lighter'}`} />
-        ))}
-      </div>
+      {showForm && (
+        <>
+          <p className="text-text-muted text-sm mb-6">
+            Шаг {progressIndex + 1} из {progressTotal}: {STEP_LABELS[step]}
+          </p>
 
-      {error && (
-        <div className="bg-danger/10 border border-danger/30 text-danger rounded-lg px-4 py-3 mb-4 text-sm">{error}</div>
+          <div className="flex gap-1 mb-6">
+            {activeSteps.map((s, i) => (
+              <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= progressIndex ? 'bg-primary' : 'bg-surface-lighter'}`} />
+            ))}
+          </div>
+
+          {error && (
+            <div className="bg-danger/10 border border-danger/30 text-danger rounded-lg px-4 py-3 mb-4 text-sm">{error}</div>
+          )}
+        </>
       )}
 
-      <div className="bg-surface rounded-xl border border-border-light shadow-sm">
+      {showForm && (<div className="bg-surface rounded-xl border border-border-light shadow-sm">
         <div className="p-6">
 
         {step === 1 && (
@@ -790,7 +853,7 @@ export default function RegistrationPage() {
             </button>
           </div>
         )}
-      </div>
+      </div>)}
     </div>
   )
 }

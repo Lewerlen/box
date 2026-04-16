@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { publicApi } from '../api'
+import { publicApi, competitionsApi } from '../api'
 import { Trophy, ChevronLeft } from 'lucide-react'
+
+interface Competition {
+  id: number
+  name: string
+  discipline: string
+  date_start: string | null
+  date_end: string | null
+  location: string | null
+  status: 'active' | 'upcoming' | 'finished'
+  participants_count: number
+}
 
 interface ApprovedBracket {
   class_name: string
@@ -10,18 +21,61 @@ interface ApprovedBracket {
   weight_name: string
 }
 
+function pickBestCompetition(list: Competition[]): Competition | null {
+  if (list.length === 0) return null
+  const sort = (arr: Competition[]) =>
+    [...arr].sort((a, b) => {
+      if (!a.date_start) return 1
+      if (!b.date_start) return -1
+      return new Date(a.date_start).getTime() - new Date(b.date_start).getTime()
+    })
+  const active = list.filter(c => c.status === 'active')
+  if (active.length > 0) return sort(active)[0]
+  const upcoming = list.filter(c => c.status === 'upcoming')
+  if (upcoming.length > 0) return sort(upcoming)[0]
+  return sort(list)[0]
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  active: 'Идёт регистрация',
+  upcoming: 'Скоро',
+  finished: 'Завершено',
+}
+
 export default function BracketsPage() {
   const { id: competitionId } = useParams<{ id?: string }>()
+
+  const [competitions, setCompetitions] = useState<Competition[]>([])
+  const [selectedCompId, setSelectedCompId] = useState<number | null>(null)
+
   const [brackets, setBrackets] = useState<ApprovedBracket[]>([])
   const [selected, setSelected] = useState<ApprovedBracket | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    publicApi.getApprovedBrackets(competitionId ? Number(competitionId) : undefined).then((r) => {
+    if (!competitionId) {
+      competitionsApi.getAll().then((r) => {
+        const list = r.data as Competition[]
+        setCompetitions(list)
+        const best = pickBestCompetition(list)
+        if (best) setSelectedCompId(best.id)
+      }).catch(() => {})
+    }
+  }, [competitionId])
+
+  const effectiveCompId = competitionId ? Number(competitionId) : (selectedCompId ?? undefined)
+
+  useEffect(() => {
+    if (!competitionId && selectedCompId === null) return
+    setLoading(true)
+    setSelected(null)
+    publicApi.getApprovedBrackets(effectiveCompId).then((r) => {
       setBrackets(r.data)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [competitionId])
+  }, [competitionId, selectedCompId])
+
+  const selectedComp = competitions.find(c => c.id === selectedCompId)
 
   const grouped: Record<string, ApprovedBracket[]> = {}
   brackets.forEach((b) => {
@@ -41,7 +95,34 @@ export default function BracketsPage() {
           Назад к соревнованию
         </Link>
       )}
-      <h1 className="text-2xl font-bold mb-6">Турнирные сетки</h1>
+
+      {!competitionId && competitions.length > 0 && (
+        <div className="mb-6 bg-surface-light rounded-xl border border-border p-4">
+          <label className="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
+            Соревнование
+          </label>
+          <select
+            value={selectedCompId ?? ''}
+            onChange={(e) => {
+              setSelectedCompId(e.target.value ? Number(e.target.value) : null)
+            }}
+            className="w-full px-3 py-2.5 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
+          >
+            {competitions.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}{c.status ? ` — ${STATUS_LABEL[c.status] ?? c.status}` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Турнирные сетки</h1>
+        {!competitionId && selectedComp && (
+          <p className="text-text-muted text-sm mt-0.5">{selectedComp.name}</p>
+        )}
+      </div>
 
       {loading ? (
         <div className="text-center py-12 text-text-muted">Загрузка...</div>
@@ -97,7 +178,7 @@ export default function BracketsPage() {
                 gender: selected.gender,
                 age_category_name: selected.age_category_name,
                 weight_name: selected.weight_name,
-                competition_id: competitionId ? Number(competitionId) : undefined,
+                competition_id: effectiveCompId,
               })}
               alt="Турнирная сетка"
               className="max-w-full"

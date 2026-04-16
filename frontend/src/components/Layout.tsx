@@ -38,6 +38,7 @@ export default function Layout() {
     { to: '/', label: 'Главная' },
     { to: '/participants', label: 'Участники' },
     { to: '/brackets', label: 'Сетки' },
+    { to: '/register', label: 'Регистрация' },
   ]
 
   const adminLinks = [
