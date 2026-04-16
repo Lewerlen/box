@@ -149,10 +149,11 @@ export const adminApi = {
   createParticipant: (data: RegistrationData) => api.post('/admin/participants', data),
   updateParticipant: (id: number, data: ParticipantUpdateData) => api.put(`/admin/participants/${id}`, data),
   deleteParticipant: (id: number) => api.delete(`/admin/participants/${id}`),
-  importCsv: (file: File) => {
+  importCsv: (file: File, competition_id?: number) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/admin/import-csv', formData);
+    const params = competition_id !== undefined ? { competition_id } : {};
+    return api.post('/admin/import-csv', formData, { params });
   },
   getBracketCategories: (competition_id?: number) => api.get('/admin/brackets/categories', { params: competition_id !== undefined ? { competition_id } : {} }),
   getBracketDetail: (params: BracketParams) => api.get('/admin/brackets/detail', { params }),

@@ -221,7 +221,11 @@ def admin_delete_participant(participant_id: int, admin: str = Depends(get_curre
 
 
 @router.post("/import-csv")
-async def import_csv(file: UploadFile = File(...), admin: str = Depends(get_current_admin)):
+async def import_csv(
+    file: UploadFile = File(...),
+    competition_id: Optional[int] = None,
+    admin: str = Depends(get_current_admin),
+):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Только CSV файлы")
 
@@ -232,7 +236,7 @@ async def import_csv(file: UploadFile = File(...), admin: str = Depends(get_curr
         f.write(contents)
 
     try:
-        stats = await process_csv_import(temp_path, tgid_who_added=0)
+        stats = await process_csv_import(temp_path, tgid_who_added=0, competition_id=competition_id)
         update_cache()
         return stats
     except Exception as e:

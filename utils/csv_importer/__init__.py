@@ -80,7 +80,7 @@ def _normalize_age_category(age_cat_str: str) -> str:
     # Если ничего не подошло, возвращаем исходное значение
     return age_cat_str
                 
-async def process_csv_import(file_path: str, tgid_who_added: int) -> dict:
+async def process_csv_import(file_path: str, tgid_who_added: int, competition_id: int | None = None) -> dict:
     stats = {"created": 0, "updated": 0, "errors": 0, "error_details": []}
     age_categories_cache = get_age_categories_from_cache()
     if not age_categories_cache:
@@ -238,6 +238,7 @@ async def process_csv_import(file_path: str, tgid_who_added: int) -> dict:
                         "city_name": city_name,
                         "club_name": club_name,
                         "coach_name": coach_name,
+                        "competition_id": competition_id,
                     }
 
 

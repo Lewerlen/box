@@ -138,7 +138,7 @@ export default function AdminParticipants() {
     setCsvUploading(true)
     setCsvResult(null)
     try {
-      const res = await adminApi.importCsv(file)
+      const res = await adminApi.importCsv(file, competitionId ? Number(competitionId) : undefined)
       setCsvResult(res.data)
       load()
     } catch (e: unknown) {
