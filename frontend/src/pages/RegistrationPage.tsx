@@ -109,7 +109,7 @@ interface Competition {
 }
 
 function isRegistrationOpen(c: Competition): boolean {
-  if (c.status === 'finished') return false
+  if (c.status !== 'active') return false
   if (c.registration_closed) return false
   if (c.registration_deadline) {
     const deadline = new Date(c.registration_deadline)
@@ -120,18 +120,6 @@ function isRegistrationOpen(c: Competition): boolean {
   return true
 }
 
-function registrationBlockReason(c: Competition): string {
-  if (c.status === 'finished') return 'Соревнование завершено. Приём заявок закрыт.'
-  if (c.registration_closed) return 'Регистрация закрыта организатором.'
-  if (c.registration_deadline) {
-    const deadline = new Date(c.registration_deadline)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (today > deadline) return `Срок подачи заявок истёк (${deadline.toLocaleDateString('ru-RU')}).`
-  }
-  if (c.status === 'upcoming') return 'Регистрация на это соревнование пока не открыта.'
-  return ''
-}
 
 function pickBestCompetition(list: Competition[]): Competition | null {
   if (list.length === 0) return null
@@ -205,7 +193,8 @@ export default function RegistrationPage() {
       competitionsApi.getAll().then((r) => {
         const list = r.data as Competition[]
         setCompetitions(list)
-        const best = pickBestCompetition(list)
+        const open = list.filter(isRegistrationOpen)
+        const best = pickBestCompetition(open)
         if (best) setSelectedCompetitionId(best.id)
       }).catch(() => {})
     }
@@ -371,10 +360,9 @@ export default function RegistrationPage() {
   const finalClub = clubName || manualClub
   const finalCoach = coachName || manualCoach
 
+  const openCompetitions = competitions.filter(isRegistrationOpen)
   const selectedCompObj = competitions.find(c => c.id === selectedCompetitionId) ?? null
-  const showForm = competitionId
-    ? true
-    : selectedCompObj !== null && isRegistrationOpen(selectedCompObj)
+  const showForm = competitionId ? true : selectedCompObj !== null
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -389,7 +377,14 @@ export default function RegistrationPage() {
       )}
       <h1 className="text-2xl font-bold mb-2 text-text">Регистрация участника</h1>
 
-      {!competitionId && competitions.length > 0 && (
+      {!competitionId && openCompetitions.length === 1 && selectedCompObj && (
+        <div className="mb-6 bg-surface-light rounded-xl border border-border px-4 py-3">
+          <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-0.5">Соревнование</p>
+          <p className="text-text text-sm font-medium">{selectedCompObj.name}</p>
+        </div>
+      )}
+
+      {!competitionId && openCompetitions.length > 1 && (
         <div className="mb-6 bg-surface-light rounded-xl border border-border p-4">
           <label className="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">
             Соревнование
@@ -404,7 +399,7 @@ export default function RegistrationPage() {
             }}
             className="w-full px-3 py-2.5 pr-9 appearance-none bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary/50"
           >
-            {competitions.map(c => (
+            {openCompetitions.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -413,13 +408,11 @@ export default function RegistrationPage() {
         </div>
       )}
 
-      {!competitionId && selectedCompObj && !isRegistrationOpen(selectedCompObj) && (
-        <div className="bg-surface-light rounded-xl border border-border p-8 text-center">
+      {!competitionId && competitions.length > 0 && openCompetitions.length === 0 && (
+        <div className="bg-surface-light rounded-xl border border-border p-8 text-center mb-6">
           <Trophy className="w-12 h-12 mx-auto mb-3 text-text-muted" />
-          <p className="text-text font-semibold text-lg mb-1">
-            {selectedCompObj.status === 'upcoming' ? 'Регистрация ещё не открыта' : 'Регистрация закрыта'}
-          </p>
-          <p className="text-text-muted text-sm">{registrationBlockReason(selectedCompObj)}</p>
+          <p className="text-text font-semibold text-lg mb-1">Нет открытых соревнований</p>
+          <p className="text-text-muted text-sm">На данный момент регистрация не открыта ни на одно соревнование. Следите за обновлениями.</p>
         </div>
       )}
 
