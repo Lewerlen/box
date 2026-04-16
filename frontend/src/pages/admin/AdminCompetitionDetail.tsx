@@ -107,7 +107,14 @@ const STATUS_COLORS: Record<string, string> = {
 
 function toDateTimeLocal(iso: string | null): string {
   if (!iso) return ''
-  return iso.slice(0, 16)
+  const d = new Date(iso)
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
+function fromDateTimeLocal(str: string): string | null {
+  if (!str) return null
+  return new Date(str).toISOString()
 }
 
 const emptyForm = {
@@ -177,8 +184,8 @@ export default function AdminCompetitionDetail() {
         date_end: form.date_end || undefined,
         location: form.location.trim() || undefined,
         status: form.status,
-        registration_deadline: form.registration_deadline || null,
-        registration_open_at: form.registration_open_at || null,
+        registration_deadline: fromDateTimeLocal(form.registration_deadline),
+        registration_open_at: fromDateTimeLocal(form.registration_open_at),
         registration_closed: form.registration_closed,
       })
       setShowEditForm(false)
