@@ -17,6 +17,8 @@ class CompetitionCreate(BaseModel):
     date_end: Optional[date] = None
     location: Optional[str] = None
     status: str = "upcoming"
+    registration_deadline: Optional[date] = None
+    registration_closed: bool = False
 
 
 class CompetitionUpdate(BaseModel):
@@ -26,6 +28,8 @@ class CompetitionUpdate(BaseModel):
     date_end: Optional[date] = None
     location: Optional[str] = None
     status: Optional[str] = None
+    registration_deadline: Optional[date] = None
+    registration_closed: Optional[bool] = None
 
 
 def _row_to_dict(row):
@@ -39,6 +43,8 @@ def _row_to_dict(row):
         "status": row[6],
         "created_at": row[7].isoformat() if row[7] else None,
         "participants_count": row[8] if len(row) > 8 else 0,
+        "registration_deadline": row[9].isoformat() if len(row) > 9 and row[9] else None,
+        "registration_closed": row[10] if len(row) > 10 else False,
     }
 
 
@@ -50,11 +56,13 @@ def list_competitions():
         cur.execute("""
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
                    c.location, c.status, c.created_at,
-                   COUNT(p.id) AS participants_count
+                   COUNT(p.id) AS participants_count,
+                   c.registration_deadline, c.registration_closed
             FROM competitions c
             LEFT JOIN participant p ON p.competition_id = c.id
             GROUP BY c.id, c.name, c.discipline, c.date_start, c.date_end,
-                     c.location, c.status, c.created_at
+                     c.location, c.status, c.created_at,
+                     c.registration_deadline, c.registration_closed
             ORDER BY
                 CASE c.status
                     WHEN 'active' THEN 1
@@ -78,12 +86,14 @@ def get_competition(competition_id: int):
         cur.execute("""
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
                    c.location, c.status, c.created_at,
-                   COUNT(p.id) AS participants_count
+                   COUNT(p.id) AS participants_count,
+                   c.registration_deadline, c.registration_closed
             FROM competitions c
             LEFT JOIN participant p ON p.competition_id = c.id
             WHERE c.id = %s
             GROUP BY c.id, c.name, c.discipline, c.date_start, c.date_end,
-                     c.location, c.status, c.created_at
+                     c.location, c.status, c.created_at,
+                     c.registration_deadline, c.registration_closed
         """, (competition_id,))
         row = cur.fetchone()
         if not row:
@@ -105,9 +115,15 @@ def create_competition(data: CompetitionCreate):
     try:
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO competitions (name, discipline, date_start, date_end, location, status)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
-        """, (data.name, data.discipline, data.date_start, data.date_end, data.location, data.status))
+            INSERT INTO competitions
+                (name, discipline, date_start, date_end, location, status,
+                 registration_deadline, registration_closed)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (
+            data.name, data.discipline, data.date_start, data.date_end,
+            data.location, data.status,
+            data.registration_deadline, data.registration_closed,
+        ))
         new_id = cur.fetchone()[0]
         conn.commit()
         return {"id": new_id, "message": "Соревнование создано"}
@@ -139,6 +155,10 @@ def update_competition(competition_id: int, data: CompetitionUpdate):
         if data.status not in valid_statuses:
             raise HTTPException(status_code=400, detail="Недопустимый статус")
         fields["status"] = data.status
+    if "registration_deadline" in data.model_fields_set:
+        fields["registration_deadline"] = data.registration_deadline
+    if data.registration_closed is not None:
+        fields["registration_closed"] = data.registration_closed
 
     if not fields:
         raise HTTPException(status_code=400, detail="Нет полей для обновления")

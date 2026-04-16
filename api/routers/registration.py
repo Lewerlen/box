@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
-from db.database import save_participant_data
+from db.database import save_participant_data, get_db_connection
 from db.cache import (
     get_age_categories_from_cache,
     get_weight_categories_from_cache,
@@ -100,8 +100,32 @@ def get_coach_list(club_id: int):
     return get_coaches_from_cache(club_id)
 
 
+def _check_registration_open(competition_id: int):
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT status, registration_closed, registration_deadline FROM competitions WHERE id = %s",
+            (competition_id,)
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Соревнование не найдено")
+        status, reg_closed, reg_deadline = row
+        if status == "finished":
+            raise HTTPException(status_code=403, detail="Регистрация закрыта: соревнование завершено")
+        if reg_closed:
+            raise HTTPException(status_code=403, detail="Регистрация закрыта организатором")
+        if reg_deadline and date.today() > reg_deadline:
+            raise HTTPException(status_code=403, detail=f"Срок регистрации истёк ({reg_deadline.strftime('%d.%m.%Y')})")
+    finally:
+        conn.close()
+
+
 @router.post("/submit")
 def submit_registration(data: RegistrationData):
+    if data.competition_id:
+        _check_registration_open(data.competition_id)
     try:
         participant_data = {
             "fio": data.fio.strip(),

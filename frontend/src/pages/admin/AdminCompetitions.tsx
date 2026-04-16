@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import api, { competitionsApi } from '../../api'
-import { Plus, Pencil, Trash2, Loader2, X, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -10,6 +10,8 @@ interface Competition {
   date_end: string | null
   location: string | null
   status: string
+  registration_deadline: string | null
+  registration_closed: boolean
 }
 
 const DISCIPLINE_OPTIONS = [
@@ -52,6 +54,8 @@ const emptyForm = {
   date_end: '',
   location: '',
   status: 'upcoming',
+  registration_deadline: '',
+  registration_closed: false,
 }
 
 export default function AdminCompetitions() {
@@ -89,6 +93,8 @@ export default function AdminCompetitions() {
       date_end: c.date_end ?? '',
       location: c.location ?? '',
       status: c.status,
+      registration_deadline: c.registration_deadline ?? '',
+      registration_closed: c.registration_closed,
     })
     setError('')
     setShowForm(true)
@@ -109,6 +115,8 @@ export default function AdminCompetitions() {
         date_end: form.date_end || undefined,
         location: form.location.trim() || undefined,
         status: form.status,
+        registration_deadline: form.registration_deadline || null,
+        registration_closed: form.registration_closed,
       }
       if (editId !== null) {
         await competitionsApi.update(editId, payload)
@@ -133,6 +141,13 @@ export default function AdminCompetitions() {
       load()
     } catch {}
     setDeletingId(null)
+  }
+
+  const toggleRegClosed = async (c: Competition) => {
+    try {
+      await competitionsApi.update(c.id, { registration_closed: !c.registration_closed })
+      load()
+    } catch {}
   }
 
   return (
@@ -212,6 +227,29 @@ export default function AdminCompetitions() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm text-text-muted mb-1">Дедлайн регистрации</label>
+              <input
+                type="date"
+                value={form.registration_deadline}
+                onChange={(e) => setForm({ ...form, registration_deadline: e.target.value })}
+                className="w-full px-3 py-2 bg-surface-light border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-5">
+              <input
+                type="checkbox"
+                id="reg_closed"
+                checked={form.registration_closed}
+                onChange={(e) => setForm({ ...form, registration_closed: e.target.checked })}
+                className="w-4 h-4 accent-danger cursor-pointer"
+              />
+              <label htmlFor="reg_closed" className="text-sm text-text cursor-pointer select-none">
+                Закрыть регистрацию вручную
+              </label>
+            </div>
+
             <div className="sm:col-span-2">
               <label className="block text-sm text-text-muted mb-1">Место проведения</label>
               <input
@@ -264,6 +302,12 @@ export default function AdminCompetitions() {
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[c.status] ?? 'bg-gray-500/15 text-gray-400'}`}>
                   {STATUS_LABEL[c.status] ?? c.status}
                 </span>
+                {c.registration_closed && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-danger/15 text-danger">
+                    <Lock className="w-2.5 h-2.5" />
+                    Закрыта
+                  </span>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -276,10 +320,22 @@ export default function AdminCompetitions() {
                     </div>
                   )}
                   {c.location && <div>{c.location}</div>}
+                  {c.registration_deadline && (
+                    <div className="text-warning">
+                      Дедлайн регистрации: {new Date(c.registration_deadline).toLocaleDateString('ru-RU')}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => toggleRegClosed(c)}
+                  className={`p-2 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${c.registration_closed ? 'text-danger hover:bg-danger/10' : 'text-text-dim hover:text-success hover:bg-success/10'}`}
+                  title={c.registration_closed ? 'Открыть регистрацию' : 'Закрыть регистрацию'}
+                >
+                  {c.registration_closed ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                </button>
                 <button
                   onClick={() => openEdit(c)}
                   className="p-2 text-text-dim hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer bg-transparent border-none"
