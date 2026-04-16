@@ -76,6 +76,7 @@ def admin_list_participants(
     gender: Optional[str] = None,
     age_category_id: Optional[int] = None,
     class_id: Optional[int] = None,
+    competition_id: Optional[int] = None,
     admin: str = Depends(get_current_admin),
 ):
     conn = get_db_connection()
@@ -98,6 +99,9 @@ def admin_list_participants(
     if class_id:
         where_clauses.append("p.class_id = %s")
         params.append(class_id)
+    if competition_id:
+        where_clauses.append("p.competition_id = %s")
+        params.append(competition_id)
 
     where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
@@ -456,8 +460,11 @@ def regenerate_bracket(
 
 
 @router.get("/excel/preliminary")
-def download_preliminary_excel(admin: str = Depends(get_current_admin)):
-    participants = get_all_participants_for_report()
+def download_preliminary_excel(
+    competition_id: Optional[int] = None,
+    admin: str = Depends(get_current_admin),
+):
+    participants = get_all_participants_for_report(competition_id=competition_id)
     file_path = os.path.join(TEMP_DIR, "preliminary_list.xlsx")
     generate_preliminary_list_excel(participants, file_path)
     return FileResponse(file_path, filename="preliminary_list.xlsx",
@@ -465,8 +472,11 @@ def download_preliminary_excel(admin: str = Depends(get_current_admin)):
 
 
 @router.get("/excel/weigh-in")
-def download_weigh_in_excel(admin: str = Depends(get_current_admin)):
-    participants = get_all_participants_for_report()
+def download_weigh_in_excel(
+    competition_id: Optional[int] = None,
+    admin: str = Depends(get_current_admin),
+):
+    participants = get_all_participants_for_report(competition_id=competition_id)
     file_path = os.path.join(TEMP_DIR, "weigh_in_list.xlsx")
     generate_weigh_in_list_excel(participants, file_path)
     return FileResponse(file_path, filename="weigh_in_list.xlsx",
@@ -474,9 +484,12 @@ def download_weigh_in_excel(admin: str = Depends(get_current_admin)):
 
 
 @router.get("/excel/brackets")
-def download_brackets_excel(admin: str = Depends(get_current_admin)):
-    participants = get_participants_for_approval()
-    approved_statuses = get_approved_statuses()
+def download_brackets_excel(
+    competition_id: Optional[int] = None,
+    admin: str = Depends(get_current_admin),
+):
+    participants = get_participants_for_approval(competition_id=competition_id)
+    approved_statuses = get_approved_statuses(competition_id=competition_id)
 
     grouped = defaultdict(list)
     for p in participants:
@@ -490,7 +503,7 @@ def download_brackets_excel(admin: str = Depends(get_current_admin)):
 
     bracket_data = {}
     for category_key, parts in grouped.items():
-        custom_order = get_custom_bracket_order(category_key)
+        custom_order = get_custom_bracket_order(category_key, competition_id=competition_id)
         if custom_order:
             conn = get_db_connection()
             cur = conn.cursor()
@@ -527,8 +540,11 @@ def download_brackets_excel(admin: str = Depends(get_current_admin)):
 
 
 @router.get("/excel/protocol")
-def download_protocol_excel(admin: str = Depends(get_current_admin)):
-    participants = get_all_participants_for_report()
+def download_protocol_excel(
+    competition_id: Optional[int] = None,
+    admin: str = Depends(get_current_admin),
+):
+    participants = get_all_participants_for_report(competition_id=competition_id)
     file_path = os.path.join(TEMP_DIR, "protocol.xlsx")
     generate_protocol_excel(participants, file_path)
     return FileResponse(file_path, filename="protocol.xlsx",

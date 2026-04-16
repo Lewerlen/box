@@ -159,8 +159,10 @@ export const adminApi = {
   swapParticipants: (params: SwapParams) => api.post('/admin/brackets/swap', null, { params }),
   toggleApproval: (params: BracketParams) => api.post('/admin/brackets/approve', null, { params }),
   regenerateBracket: (params: BracketParams) => api.post('/admin/brackets/regenerate', null, { params }),
-  downloadExcel: (type: 'preliminary' | 'weigh-in' | 'brackets' | 'protocol') => {
-    return api.get(`/admin/excel/${type}`, { responseType: 'blob' }).then((res) => {
+  downloadExcel: (type: 'preliminary' | 'weigh-in' | 'brackets' | 'protocol', competition_id?: number) => {
+    const params: Record<string, string | number> = {}
+    if (competition_id !== undefined) params.competition_id = competition_id
+    return api.get(`/admin/excel/${type}`, { responseType: 'blob', params }).then((res) => {
       const blob = new Blob([res.data])
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')

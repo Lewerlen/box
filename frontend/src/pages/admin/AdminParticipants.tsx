@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { adminApi, publicApi } from '../../api'
+import { useSearchParams } from 'react-router-dom'
+import { adminApi, publicApi, competitionsApi } from '../../api'
 import { Search, ChevronLeft, ChevronRight, Trash2, Edit3, Upload, X, Loader2 } from 'lucide-react'
 
 interface Participant {
@@ -23,6 +24,11 @@ interface RefItem {
   gender?: string
 }
 
+interface Competition {
+  id: number
+  name: string
+}
+
 interface EditData {
   fio?: string
   gender?: string
@@ -36,11 +42,14 @@ interface EditData {
 }
 
 export default function AdminParticipants() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [participants, setParticipants] = useState<Participant[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState('')
+  const [competitionId, setCompetitionId] = useState<string>(searchParams.get('competition_id') || '')
+  const [competitions, setCompetitions] = useState<Competition[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editData, setEditData] = useState<EditData>({})
@@ -54,21 +63,38 @@ export default function AdminParticipants() {
   useEffect(() => {
     publicApi.getClasses().then((r) => setClasses(r.data))
     publicApi.getRanks().then((r) => setRanks(r.data))
+    competitionsApi.getAll().then((r) => setCompetitions(r.data))
   }, [])
+
+  useEffect(() => {
+    setCompetitionId(searchParams.get('competition_id') || '')
+    setPage(1)
+  }, [searchParams])
 
   const load = useCallback(() => {
     setLoading(true)
-    const params: { page: number; search?: string } = { page }
+    const params: { page: number; search?: string; competition_id?: number } = { page }
     if (search) params.search = search
+    if (competitionId) params.competition_id = Number(competitionId)
     adminApi.getParticipants(params).then((r) => {
       setParticipants(r.data.participants)
       setTotal(r.data.total)
       setTotalPages(r.data.total_pages)
       setLoading(false)
     })
-  }, [page, search])
+  }, [page, search, competitionId])
 
   useEffect(() => { load() }, [load])
+
+  const handleCompetitionChange = (value: string) => {
+    setCompetitionId(value)
+    setPage(1)
+    if (value) {
+      setSearchParams({ competition_id: value })
+    } else {
+      setSearchParams({})
+    }
+  }
 
   const handleEdit = (p: Participant) => {
     setEditingId(p.id)
@@ -121,6 +147,10 @@ export default function AdminParticipants() {
     e.target.value = ''
   }
 
+  const handleDownloadExcel = () => {
+    adminApi.downloadExcel('preliminary', competitionId ? Number(competitionId) : undefined)
+  }
+
   const inputCls = "w-full px-3 py-2 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none"
 
   return (
@@ -130,11 +160,19 @@ export default function AdminParticipants() {
           <h1 className="text-2xl font-bold">Управление участниками</h1>
           <p className="text-text-muted text-sm mt-1">Всего: {total}</p>
         </div>
-        <label className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg text-sm font-medium cursor-pointer hover:bg-accent/20 transition-colors">
-          <Upload className="w-4 h-4" />
-          {csvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Импорт CSV'}
-          <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
-        </label>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDownloadExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-light border border-border text-text-secondary rounded-lg text-sm font-medium cursor-pointer hover:bg-surface-lighter transition-colors"
+          >
+            Скачать Excel
+          </button>
+          <label className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg text-sm font-medium cursor-pointer hover:bg-accent/20 transition-colors">
+            <Upload className="w-4 h-4" />
+            {csvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Импорт CSV'}
+            <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
+          </label>
+        </div>
       </div>
 
       {csvResult && (
@@ -150,13 +188,27 @@ export default function AdminParticipants() {
         </div>
       )}
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-        <input
-          type="text" placeholder="Поиск по ФИО..." value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="w-full pl-10 pr-4 py-3 bg-surface-light border border-border rounded-xl text-text placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors"
-        />
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="sm:w-72">
+          <select
+            value={competitionId}
+            onChange={(e) => handleCompetitionChange(e.target.value)}
+            className="w-full px-3 py-3 bg-surface-light border border-border rounded-xl text-text focus:outline-none focus:border-primary/50 transition-colors text-sm"
+          >
+            <option value="">Все соревнования</option>
+            {competitions.map((c) => (
+              <option key={c.id} value={String(c.id)}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <input
+            type="text" placeholder="Поиск по ФИО..." value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            className="w-full pl-10 pr-4 py-3 bg-surface-light border border-border rounded-xl text-text placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors"
+          />
+        </div>
       </div>
 
       {editingId && (

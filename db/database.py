@@ -858,10 +858,15 @@ def get_participants_by_club(club_id: int, page: int = 1, search_query: str = No
     conn.close()
     return participants, total_records, total_pages
 
-def get_all_participants_for_report():
+def get_all_participants_for_report(competition_id: int = None):
     conn = get_db_connection()
     cur = conn.cursor()
-    query = """
+    where_sql = ""
+    params = []
+    if competition_id is not None:
+        where_sql = "WHERE p.competition_id = %s"
+        params.append(competition_id)
+    query = f"""
         SELECT
             p.fio,
             p.dob,
@@ -880,9 +885,10 @@ def get_all_participants_for_report():
         LEFT JOIN club cl ON p.club_id = cl.id
         LEFT JOIN city ci ON p.city_id = ci.id
         LEFT JOIN coach co ON p.coach_id = co.id
+        {where_sql}
         ORDER BY ac.id, p.gender, wc.weight, c.id, p.fio;
     """
-    cur.execute(query)
+    cur.execute(query, tuple(params))
     columns = [
         "fio", "dob", "rank_title",
         "weight", "class_name", "gender", "club_name",
