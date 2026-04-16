@@ -91,6 +91,7 @@ export const publicApi = {
   getClubs: (cityId?: number) => api.get('/public/references/clubs', { params: cityId ? { city_id: cityId } : {} }),
   getCoaches: (clubId: number) => api.get('/public/references/coaches', { params: { club_id: clubId } }),
   getApprovedBrackets: (competition_id?: number) => api.get('/public/brackets/approved', { params: competition_id !== undefined ? { competition_id } : {} }),
+  getSchedule: (competition_id: number) => api.get(`/public/competitions/${competition_id}/schedule`),
   getBracketImage: (params: { class_name: string; gender: string; age_category_name: string; weight_name: string; competition_id?: number }) => {
     const p: Record<string, string> = {
       class_name: params.class_name,
@@ -203,4 +204,28 @@ export const adminApi = {
   renameRef: (type: string, id: number, name: string) => api.put(`/admin/references/${type}/${id}`, { name }),
   deleteRef: (type: string, id: number) => api.delete(`/admin/references/${type}/${id}`),
   mergeRef: (type: string, id: number, targetId: number) => api.post(`/admin/references/${type}/${id}/merge`, { target_id: targetId }),
+
+  getRings: (competition_id: number) => api.get(`/admin/competitions/${competition_id}/rings`),
+  createRing: (competition_id: number, name: string) => api.post(`/admin/competitions/${competition_id}/rings`, { name }),
+  updateRing: (ring_id: number, data: { name?: string; sort_order?: number }) => api.put(`/admin/rings/${ring_id}`, data),
+  deleteRing: (ring_id: number) => api.delete(`/admin/rings/${ring_id}`),
+  reorderRings: (competition_id: number, ring_ids: number[]) => api.post(`/admin/competitions/${competition_id}/rings/reorder`, { ring_ids }),
+
+  getSchedulePairs: (competition_id: number) => api.get(`/admin/competitions/${competition_id}/schedule/pairs`),
+  getAdminSchedule: (competition_id: number) => api.get(`/admin/competitions/${competition_id}/schedule`),
+  createFight: (competition_id: number, data: {
+    ring_id: number; day_number: number;
+    fighter1_id: number; fighter2_id: number;
+    class_name: string; gender: string;
+    age_category_name: string; weight_name: string;
+    round_label?: string;
+  }) => api.post(`/admin/competitions/${competition_id}/schedule`, data),
+  updateFight: (fight_id: number, data: { ring_id?: number; day_number?: number; fight_order?: number }) => api.put(`/admin/schedule/${fight_id}`, data),
+  deleteFight: (fight_id: number) => api.delete(`/admin/schedule/${fight_id}`),
+  bulkMoveFights: (competition_id: number, fight_ids: number[], ring_id: number, day_number: number) =>
+    api.post(`/admin/competitions/${competition_id}/schedule/bulk-move`, { fight_ids, ring_id, day_number }),
+  reorderFightsInCell: (competition_id: number, ring_id: number, day_number: number, fight_ids: number[]) =>
+    api.post(`/admin/competitions/${competition_id}/schedule/reorder`, { ring_id, day_number, fight_ids }),
+  moveRingToNextDay: (competition_id: number, ring_id: number, day_number: number) =>
+    api.post(`/admin/competitions/${competition_id}/schedule/move-ring-to-next-day`, { ring_id, day_number }),
 };

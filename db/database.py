@@ -351,7 +351,42 @@ def create_tables():
             status VARCHAR(20) NOT NULL DEFAULT 'upcoming',
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
+        """,
         """
+        CREATE TABLE IF NOT EXISTS competition_rings (
+            id SERIAL PRIMARY KEY,
+            competition_id INTEGER NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
+            name VARCHAR(255) NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_competition_rings_comp ON competition_rings(competition_id, sort_order);
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS fight_schedule (
+            id SERIAL PRIMARY KEY,
+            competition_id INTEGER NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
+            ring_id INTEGER NOT NULL REFERENCES competition_rings(id) ON DELETE CASCADE,
+            day_number INTEGER NOT NULL,
+            fight_order INTEGER NOT NULL DEFAULT 0,
+            fighter1_id INTEGER NOT NULL REFERENCES participant(id) ON DELETE CASCADE,
+            fighter2_id INTEGER NOT NULL REFERENCES participant(id) ON DELETE CASCADE,
+            class_name VARCHAR(255) NOT NULL,
+            gender VARCHAR(10) NOT NULL,
+            age_category_name VARCHAR(255) NOT NULL,
+            weight_name VARCHAR(255) NOT NULL,
+            round_label VARCHAR(32) NOT NULL DEFAULT '',
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_fight_schedule_comp ON fight_schedule(competition_id, day_number, ring_id, fight_order);
+        """,
+        """
+        CREATE INDEX IF NOT EXISTS idx_fight_schedule_pair ON fight_schedule(competition_id, fighter1_id, fighter2_id);
+        """,
     )
     conn = None
     try:

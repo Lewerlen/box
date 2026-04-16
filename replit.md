@@ -21,6 +21,7 @@ api/                    # FastAPI backend
     admin.py           # Admin CRUD, CSV import, Excel downloads, brackets
     admin_references.py # Admin reference data CRUD + merge (regions, cities, clubs, coaches)
     competitions.py    # Public + admin CRUD for competitions (/api/competitions)
+    schedule.py        # Rings CRUD + fight schedule (admin) and public schedule view
 frontend/              # React + Vite frontend
   src/
     api.ts             # Axios client with JWT interceptors
@@ -31,6 +32,7 @@ frontend/              # React + Vite frontend
       CompetitionPage.tsx  # Competition detail page (/competition/:id)
       ParticipantsPage.tsx # Public participant list with filters
       BracketsPage.tsx     # Public approved brackets viewer
+      SchedulePage.tsx     # Public fight schedule by day/ring
       RegistrationPage.tsx # Multi-step registration form (11 steps)
       LoginPage.tsx        # Admin login
     pages/admin/
@@ -39,6 +41,7 @@ frontend/              # React + Vite frontend
       AdminParticipants.tsx # Admin CRUD, CSV import
       AdminBrackets.tsx    # Bracket management (swap, approve, regenerate)
       AdminReferences.tsx  # Reference data management (hierarchical CRUD + merge)
+      AdminSchedule.tsx    # Schedule builder: rings + drag-and-drop fight assignment
 db/                    # Database layer (psycopg2, sync)
   database.py          # All DB functions (includes competitions table)
   init_db.py           # Schema creation and reference data seeding

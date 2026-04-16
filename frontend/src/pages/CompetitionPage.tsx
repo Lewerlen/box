@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { competitionsApi } from '../api'
-import { Calendar, MapPin, Users, Trophy, UserPlus, ChevronLeft, Clock } from 'lucide-react'
+import { Calendar, MapPin, Users, Trophy, UserPlus, ChevronLeft, Clock, CalendarDays } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -165,6 +165,17 @@ export default function CompetitionPage() {
           <div>
             <div className="font-semibold text-base text-text">Турнирные сетки</div>
             <div className="text-text-muted text-sm mt-0.5">Просмотр сеток по категориям</div>
+          </div>
+        </Link>
+
+        <Link
+          to={`/competition/${comp.id}/schedule`}
+          className="group bg-surface hover:border-primary/40 border border-border-light rounded-xl p-6 no-underline flex flex-col gap-3 transition-all"
+        >
+          <CalendarDays className="w-7 h-7 text-primary" />
+          <div>
+            <div className="font-semibold text-base text-text">Расписание боёв</div>
+            <div className="text-text-muted text-sm mt-0.5">Дни, ринги и пары</div>
           </div>
         </Link>
       </div>

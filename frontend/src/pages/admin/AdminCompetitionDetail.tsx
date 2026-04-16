@@ -4,8 +4,9 @@ import { adminApi, publicApi, competitionsApi } from '../../api'
 import {
   ChevronLeft, Pencil, Check, X, Loader2, Download, FileSpreadsheet,
   Users, Trophy, Upload, Search, ChevronRight, Trash2, Edit3,
-  RefreshCw, Lock, Unlock
+  RefreshCw, Lock, Unlock, CalendarDays
 } from 'lucide-react'
+import AdminSchedule from './AdminSchedule'
 
 interface Competition {
   id: number
@@ -136,7 +137,7 @@ const emptyForm = {
   registration_closed: false,
 }
 
-type Tab = 'participants' | 'brackets'
+type Tab = 'participants' | 'brackets' | 'schedule'
 
 export default function AdminCompetitionDetail() {
   const { id } = useParams<{ id: string }>()
@@ -392,6 +393,13 @@ export default function AdminCompetitionDetail() {
           }`}>
           <Trophy className="w-4 h-4" /> Сетки
         </button>
+        <button
+          onClick={() => setActiveTab('schedule')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer bg-transparent ${
+            activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
+          }`}>
+          <CalendarDays className="w-4 h-4" /> Расписание
+        </button>
       </div>
 
       {activeTab === 'participants' && (
@@ -399,6 +407,9 @@ export default function AdminCompetitionDetail() {
       )}
       {activeTab === 'brackets' && (
         <BracketsTab competitionId={competitionId} />
+      )}
+      {activeTab === 'schedule' && (
+        <AdminSchedule competitionId={competitionId} />
       )}
     </div>
   )
