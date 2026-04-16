@@ -116,8 +116,8 @@ def _check_registration_open(competition_id: int):
             raise HTTPException(status_code=403, detail="Регистрация недоступна: соревнование не активно")
         if reg_closed:
             raise HTTPException(status_code=403, detail="Регистрация закрыта организатором")
-        if reg_deadline and date.today() > reg_deadline:
-            raise HTTPException(status_code=403, detail=f"Срок регистрации истёк ({reg_deadline.strftime('%d.%m.%Y')})")
+        if reg_deadline and datetime.now(reg_deadline.tzinfo) > reg_deadline:
+            raise HTTPException(status_code=403, detail=f"Срок регистрации истёк ({reg_deadline.strftime('%d.%m.%Y %H:%M')})")
     finally:
         conn.close()
 

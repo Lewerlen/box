@@ -72,6 +72,47 @@ def migrate_participant_table(cur):
         print(f"  -> Предупреждение при миграции participant: {e}")
 
 
+def migrate_competition_table(cur):
+    """Добавляет registration_open_at и меняет тип registration_deadline на TIMESTAMP."""
+    try:
+        cur.execute("""
+            SELECT column_name, data_type FROM information_schema.columns
+            WHERE table_name = 'competitions'
+        """)
+        cols = {row[0]: row[1] for row in cur.fetchall()}
+
+        if 'registration_deadline' not in cols:
+            print("  -> Добавление registration_deadline в competitions...")
+            cur.execute("""
+                ALTER TABLE competitions
+                ADD COLUMN registration_deadline TIMESTAMP WITH TIME ZONE
+            """)
+        elif cols['registration_deadline'] == 'date':
+            print("  -> Изменение типа registration_deadline на TIMESTAMP WITH TIME ZONE...")
+            cur.execute("""
+                ALTER TABLE competitions
+                ALTER COLUMN registration_deadline
+                TYPE TIMESTAMP WITH TIME ZONE
+                USING registration_deadline::TIMESTAMP WITH TIME ZONE
+            """)
+
+        if 'registration_closed' not in cols:
+            print("  -> Добавление registration_closed в competitions...")
+            cur.execute("""
+                ALTER TABLE competitions
+                ADD COLUMN registration_closed BOOLEAN NOT NULL DEFAULT FALSE
+            """)
+
+        if 'registration_open_at' not in cols:
+            print("  -> Добавление registration_open_at в competitions...")
+            cur.execute("""
+                ALTER TABLE competitions
+                ADD COLUMN registration_open_at TIMESTAMP WITH TIME ZONE
+            """)
+    except Exception as e:
+        print(f"  -> Предупреждение при миграции таблицы competitions: {e}")
+
+
 def migrate_bracket_tables(cur):
     """Добавляет competition_id в таблицы approved_grids и custom_brackets."""
     try:
@@ -343,6 +384,7 @@ def create_tables():
         migrate_age_category_table(cur)
         migrate_participant_table(cur)
         migrate_bracket_tables(cur)
+        migrate_competition_table(cur)
 
         # Проверка схемы — быстрый сбой при отсутствии критичных колонок/ограничений
         required_columns = {

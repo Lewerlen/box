@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { competitionsApi } from '../../api'
-import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock, Settings } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock, Settings, Clock } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -12,6 +12,7 @@ interface Competition {
   location: string | null
   status: string
   registration_deadline: string | null
+  registration_open_at: string | null
   registration_closed: boolean
 }
 
@@ -48,6 +49,17 @@ const STATUS_COLORS: Record<string, string> = {
   finished: 'bg-gray-500/15 text-gray-400',
 }
 
+function formatDateTime(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function toDateTimeLocal(iso: string | null): string {
+  if (!iso) return ''
+  return iso.slice(0, 16)
+}
+
 const emptyForm = {
   name: '',
   discipline: 'muay_thai',
@@ -56,6 +68,7 @@ const emptyForm = {
   location: '',
   status: 'upcoming',
   registration_deadline: '',
+  registration_open_at: '',
   registration_closed: false,
 }
 
@@ -114,7 +127,8 @@ export default function AdminCompetitions() {
       date_end: c.date_end ?? '',
       location: c.location ?? '',
       status: c.status,
-      registration_deadline: c.registration_deadline ?? '',
+      registration_deadline: toDateTimeLocal(c.registration_deadline),
+      registration_open_at: toDateTimeLocal(c.registration_open_at),
       registration_closed: c.registration_closed,
     }
     setForm(formValues)
@@ -144,6 +158,7 @@ export default function AdminCompetitions() {
         location: form.location.trim() || undefined,
         status: form.status,
         registration_deadline: form.registration_deadline || null,
+        registration_open_at: form.registration_open_at || null,
         registration_closed: form.registration_closed,
       }
       if (editId !== null) {
@@ -258,29 +273,41 @@ export default function AdminCompetitions() {
             </div>
 
             <div>
-              <label className="block text-sm text-text-muted mb-1">Дедлайн регистрации</label>
+              <label className="block text-sm text-text-muted mb-1">Открытие регистрации</label>
               <input
-                type="date"
+                type="datetime-local"
+                value={form.registration_open_at}
+                onChange={(e) => setForm({ ...form, registration_open_at: e.target.value })}
+                className="w-full px-3 py-2 bg-surface-light border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-text-muted mb-1">Закрытие регистрации</label>
+              <input
+                type="datetime-local"
                 value={form.registration_deadline}
                 onChange={(e) => setForm({ ...form, registration_deadline: e.target.value })}
                 className="w-full px-3 py-2 bg-surface-light border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary"
               />
             </div>
 
-            <div className="flex items-center gap-3 pt-5">
-              <input
-                type="checkbox"
-                id="reg_closed"
-                checked={form.registration_closed}
-                onChange={(e) => setForm({ ...form, registration_closed: e.target.checked })}
-                className="w-4 h-4 accent-danger cursor-pointer"
-              />
-              <label htmlFor="reg_closed" className="text-sm text-text cursor-pointer select-none">
-                Закрыть регистрацию вручную
-              </label>
-            </div>
+            {editId !== null && (
+              <div className="flex items-center gap-3 pt-5">
+                <input
+                  type="checkbox"
+                  id="reg_closed"
+                  checked={form.registration_closed}
+                  onChange={(e) => setForm({ ...form, registration_closed: e.target.checked })}
+                  className="w-4 h-4 accent-danger cursor-pointer"
+                />
+                <label htmlFor="reg_closed" className="text-sm text-text cursor-pointer select-none">
+                  Закрыть регистрацию вручную
+                </label>
+              </div>
+            )}
 
-            <div className="sm:col-span-2">
+            <div className={editId !== null ? '' : 'sm:col-span-2'}>
               <label className="block text-sm text-text-muted mb-1">Место проведения</label>
               <input
                 type="text"
@@ -350,9 +377,14 @@ export default function AdminCompetitions() {
                     </div>
                   )}
                   {c.location && <div>{c.location}</div>}
-                  {c.registration_deadline && (
-                    <div className="text-warning">
-                      Дедлайн регистрации: {new Date(c.registration_deadline).toLocaleDateString('ru-RU')}
+                  {(c.registration_open_at || c.registration_deadline) && (
+                    <div className="flex items-center gap-1 text-warning">
+                      <Clock className="w-3 h-3" />
+                      <span>
+                        Приём заявок:
+                        {c.registration_open_at ? ` с ${formatDateTime(c.registration_open_at)}` : ''}
+                        {c.registration_deadline ? ` по ${formatDateTime(c.registration_deadline)}` : ''}
+                      </span>
                     </div>
                   )}
                 </div>

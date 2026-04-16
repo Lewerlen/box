@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { competitionsApi } from '../api'
-import { MapPin, Calendar, Users, ChevronRight, Trophy } from 'lucide-react'
+import { MapPin, Calendar, Users, ChevronRight, Trophy, Clock } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -12,6 +12,9 @@ interface Competition {
   location: string | null
   status: 'active' | 'upcoming' | 'finished'
   participants_count: number
+  registration_deadline: string | null
+  registration_open_at: string | null
+  registration_closed: boolean
 }
 
 const DISCIPLINE_LABEL: Record<string, string> = {
@@ -99,6 +102,16 @@ function CompetitionCard({ comp }: { comp: Competition }) {
             <Users className="w-4 h-4 shrink-0 text-text-dim" />
             <span>{comp.participants_count} участников</span>
           </div>
+          {(comp.registration_open_at || comp.registration_deadline) && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 shrink-0 text-text-dim" />
+              <span className="text-xs">
+                Приём заявок:
+                {comp.registration_open_at && ` с ${new Date(comp.registration_open_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                {comp.registration_deadline && ` по ${new Date(comp.registration_deadline).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto pt-3 border-t border-border-light flex items-center justify-between">

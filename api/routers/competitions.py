@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime
 
 from api.auth import get_current_admin
 from db.database import get_db_connection
@@ -13,22 +13,24 @@ admin_router = APIRouter()
 class CompetitionCreate(BaseModel):
     name: str
     discipline: str
-    date_start: Optional[date] = None
-    date_end: Optional[date] = None
+    date_start: Optional[str] = None
+    date_end: Optional[str] = None
     location: Optional[str] = None
     status: str = "upcoming"
-    registration_deadline: Optional[date] = None
+    registration_deadline: Optional[datetime] = None
+    registration_open_at: Optional[datetime] = None
     registration_closed: bool = False
 
 
 class CompetitionUpdate(BaseModel):
     name: Optional[str] = None
     discipline: Optional[str] = None
-    date_start: Optional[date] = None
-    date_end: Optional[date] = None
+    date_start: Optional[str] = None
+    date_end: Optional[str] = None
     location: Optional[str] = None
     status: Optional[str] = None
-    registration_deadline: Optional[date] = None
+    registration_deadline: Optional[datetime] = None
+    registration_open_at: Optional[datetime] = None
     registration_closed: Optional[bool] = None
 
 
@@ -45,6 +47,7 @@ def _row_to_dict(row):
         "participants_count": row[8] if len(row) > 8 else 0,
         "registration_deadline": row[9].isoformat() if len(row) > 9 and row[9] else None,
         "registration_closed": row[10] if len(row) > 10 else False,
+        "registration_open_at": row[11].isoformat() if len(row) > 11 and row[11] else None,
     }
 
 
@@ -57,12 +60,12 @@ def list_competitions():
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
                    c.location, c.status, c.created_at,
                    COUNT(p.id) AS participants_count,
-                   c.registration_deadline, c.registration_closed
+                   c.registration_deadline, c.registration_closed, c.registration_open_at
             FROM competitions c
             LEFT JOIN participant p ON p.competition_id = c.id
             GROUP BY c.id, c.name, c.discipline, c.date_start, c.date_end,
                      c.location, c.status, c.created_at,
-                     c.registration_deadline, c.registration_closed
+                     c.registration_deadline, c.registration_closed, c.registration_open_at
             ORDER BY
                 CASE c.status
                     WHEN 'active' THEN 1
@@ -87,13 +90,13 @@ def get_competition(competition_id: int):
             SELECT c.id, c.name, c.discipline, c.date_start, c.date_end,
                    c.location, c.status, c.created_at,
                    COUNT(p.id) AS participants_count,
-                   c.registration_deadline, c.registration_closed
+                   c.registration_deadline, c.registration_closed, c.registration_open_at
             FROM competitions c
             LEFT JOIN participant p ON p.competition_id = c.id
             WHERE c.id = %s
             GROUP BY c.id, c.name, c.discipline, c.date_start, c.date_end,
                      c.location, c.status, c.created_at,
-                     c.registration_deadline, c.registration_closed
+                     c.registration_deadline, c.registration_closed, c.registration_open_at
         """, (competition_id,))
         row = cur.fetchone()
         if not row:
@@ -117,12 +120,12 @@ def create_competition(data: CompetitionCreate):
         cur.execute("""
             INSERT INTO competitions
                 (name, discipline, date_start, date_end, location, status,
-                 registration_deadline, registration_closed)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+                 registration_deadline, registration_open_at, registration_closed)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """, (
             data.name, data.discipline, data.date_start, data.date_end,
             data.location, data.status,
-            data.registration_deadline, data.registration_closed,
+            data.registration_deadline, data.registration_open_at, data.registration_closed,
         ))
         new_id = cur.fetchone()[0]
         conn.commit()
@@ -157,6 +160,8 @@ def update_competition(competition_id: int, data: CompetitionUpdate):
         fields["status"] = data.status
     if "registration_deadline" in data.model_fields_set:
         fields["registration_deadline"] = data.registration_deadline
+    if "registration_open_at" in data.model_fields_set:
+        fields["registration_open_at"] = data.registration_open_at
     if data.registration_closed is not None:
         fields["registration_closed"] = data.registration_closed
 

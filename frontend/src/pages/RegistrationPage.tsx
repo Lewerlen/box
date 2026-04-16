@@ -106,6 +106,7 @@ interface Competition {
   status: 'active' | 'upcoming' | 'finished'
   participants_count: number
   registration_deadline: string | null
+  registration_open_at: string | null
   registration_closed: boolean
 }
 
@@ -114,9 +115,7 @@ function isRegistrationOpen(c: Competition): boolean {
   if (c.registration_closed) return false
   if (c.registration_deadline) {
     const deadline = new Date(c.registration_deadline)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (today > deadline) return false
+    if (new Date() > deadline) return false
   }
   return true
 }

@@ -131,6 +131,9 @@ export const competitionsApi = {
     date_end?: string;
     location?: string;
     status: string;
+    registration_deadline?: string | null;
+    registration_open_at?: string | null;
+    registration_closed?: boolean;
   }) => api.post('/admin/competitions', data),
   update: (id: number, data: {
     name?: string;
@@ -140,6 +143,7 @@ export const competitionsApi = {
     location?: string;
     status?: string;
     registration_deadline?: string | null;
+    registration_open_at?: string | null;
     registration_closed?: boolean;
   }) => api.put(`/admin/competitions/${id}`, data),
   delete: (id: number) => api.delete(`/admin/competitions/${id}`),

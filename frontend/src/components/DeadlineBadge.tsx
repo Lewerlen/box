@@ -7,12 +7,15 @@ interface DeadlineBadgeProps {
 
 export function formatDeadlineDate(dateStr: string): string {
   const d = new Date(dateStr)
+  const hasTime = dateStr.includes('T') && !dateStr.endsWith('T00:00:00') && !dateStr.endsWith('T00:00:00.000Z')
+  if (hasTime) {
+    return d.toLocaleString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 export function isDeadlineUrgent(dateStr: string): boolean {
   const deadline = new Date(dateStr)
-  deadline.setHours(23, 59, 59, 999)
   const now = new Date()
   const diffMs = deadline.getTime() - now.getTime()
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
@@ -21,7 +24,6 @@ export function isDeadlineUrgent(dateStr: string): boolean {
 
 export function isDeadlinePassed(dateStr: string): boolean {
   const deadline = new Date(dateStr)
-  deadline.setHours(23, 59, 59, 999)
   return deadline < new Date()
 }
 

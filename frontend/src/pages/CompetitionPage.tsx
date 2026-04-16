@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { competitionsApi } from '../api'
-import { Calendar, MapPin, Users, Trophy, UserPlus, ChevronLeft } from 'lucide-react'
+import { Calendar, MapPin, Users, Trophy, UserPlus, ChevronLeft, Clock } from 'lucide-react'
 
 interface Competition {
   id: number
@@ -12,6 +12,9 @@ interface Competition {
   location: string | null
   status: 'active' | 'upcoming' | 'finished'
   participants_count: number
+  registration_deadline: string | null
+  registration_open_at: string | null
+  registration_closed: boolean
 }
 
 const DISCIPLINE_LABEL: Record<string, string> = {
@@ -116,6 +119,16 @@ export default function CompetitionPage() {
             <Users className="w-5 h-5 shrink-0 text-primary" />
             <span>{comp.participants_count} {comp.participants_count === 1 ? 'участник зарегистрирован' : 'участников зарегистрировано'}</span>
           </div>
+          {(comp.registration_open_at || comp.registration_deadline) && (
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 shrink-0 text-primary" />
+              <span>
+                Приём заявок:
+                {comp.registration_open_at && ` с ${new Date(comp.registration_open_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                {comp.registration_deadline && ` по ${new Date(comp.registration_deadline).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

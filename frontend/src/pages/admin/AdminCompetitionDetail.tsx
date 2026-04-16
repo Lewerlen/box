@@ -16,6 +16,7 @@ interface Competition {
   location: string | null
   status: string
   registration_deadline: string | null
+  registration_open_at: string | null
   registration_closed: boolean
 }
 
@@ -104,6 +105,11 @@ const STATUS_COLORS: Record<string, string> = {
   finished: 'bg-gray-500/15 text-gray-400',
 }
 
+function toDateTimeLocal(iso: string | null): string {
+  if (!iso) return ''
+  return iso.slice(0, 16)
+}
+
 const emptyForm = {
   name: '',
   discipline: 'muay_thai',
@@ -112,6 +118,7 @@ const emptyForm = {
   location: '',
   status: 'upcoming',
   registration_deadline: '',
+  registration_open_at: '',
   registration_closed: false,
 }
 
@@ -150,7 +157,8 @@ export default function AdminCompetitionDetail() {
       date_end: competition.date_end ?? '',
       location: competition.location ?? '',
       status: competition.status,
-      registration_deadline: competition.registration_deadline ?? '',
+      registration_deadline: toDateTimeLocal(competition.registration_deadline),
+      registration_open_at: toDateTimeLocal(competition.registration_open_at),
       registration_closed: competition.registration_closed,
     })
     setFormError('')
@@ -170,6 +178,7 @@ export default function AdminCompetitionDetail() {
         location: form.location.trim() || undefined,
         status: form.status,
         registration_deadline: form.registration_deadline || null,
+        registration_open_at: form.registration_open_at || null,
         registration_closed: form.registration_closed,
       })
       setShowEditForm(false)
@@ -248,8 +257,13 @@ export default function AdminCompetitionDetail() {
                   className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary" />
               </div>
               <div>
-                <label className="block text-sm text-text-muted mb-1">Дедлайн регистрации</label>
-                <input type="date" value={form.registration_deadline} onChange={(e) => setForm({ ...form, registration_deadline: e.target.value })}
+                <label className="block text-sm text-text-muted mb-1">Открытие регистрации</label>
+                <input type="datetime-local" value={form.registration_open_at} onChange={(e) => setForm({ ...form, registration_open_at: e.target.value })}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-sm text-text-muted mb-1">Закрытие регистрации</label>
+                <input type="datetime-local" value={form.registration_deadline} onChange={(e) => setForm({ ...form, registration_deadline: e.target.value })}
                   className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text text-sm focus:outline-none focus:border-primary" />
               </div>
               <div className="flex items-center gap-3 pt-5">
@@ -303,8 +317,12 @@ export default function AdminCompetitionDetail() {
                   </div>
                 )}
                 {competition.location && <div>{competition.location}</div>}
-                {competition.registration_deadline && (
-                  <div className="text-warning">Дедлайн регистрации: {new Date(competition.registration_deadline).toLocaleDateString('ru-RU')}</div>
+                {(competition.registration_open_at || competition.registration_deadline) && (
+                  <div className="text-warning">
+                    Приём заявок:
+                    {competition.registration_open_at && ` с ${new Date(competition.registration_open_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                    {competition.registration_deadline && ` по ${new Date(competition.registration_deadline).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                  </div>
                 )}
               </div>
             </div>
