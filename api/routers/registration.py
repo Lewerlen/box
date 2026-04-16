@@ -105,17 +105,19 @@ def _check_registration_open(competition_id: int):
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT status, registration_closed, registration_deadline FROM competitions WHERE id = %s",
+            "SELECT status, registration_closed, registration_deadline, registration_open_at FROM competitions WHERE id = %s",
             (competition_id,)
         )
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Соревнование не найдено")
-        status, reg_closed, reg_deadline = row
+        status, reg_closed, reg_deadline, reg_open_at = row
         if status != "active":
             raise HTTPException(status_code=403, detail="Регистрация недоступна: соревнование не активно")
         if reg_closed:
             raise HTTPException(status_code=403, detail="Регистрация закрыта организатором")
+        if reg_open_at and datetime.now(reg_open_at.tzinfo) < reg_open_at:
+            raise HTTPException(status_code=403, detail=f"Регистрация ещё не открыта (откроется {reg_open_at.strftime('%d.%m.%Y %H:%M')})")
         if reg_deadline and datetime.now(reg_deadline.tzinfo) > reg_deadline:
             raise HTTPException(status_code=403, detail=f"Срок регистрации истёк ({reg_deadline.strftime('%d.%m.%Y %H:%M')})")
     finally:

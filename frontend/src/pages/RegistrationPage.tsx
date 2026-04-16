@@ -113,11 +113,25 @@ interface Competition {
 function isRegistrationOpen(c: Competition): boolean {
   if (c.status !== 'active') return false
   if (c.registration_closed) return false
+  if (c.registration_open_at) {
+    const openAt = new Date(c.registration_open_at)
+    if (new Date() < openAt) return false
+  }
   if (c.registration_deadline) {
     const deadline = new Date(c.registration_deadline)
     if (new Date() > deadline) return false
   }
   return true
+}
+
+function registrationNotOpenYetMessage(c: Competition): string | null {
+  if (c.registration_open_at) {
+    const openAt = new Date(c.registration_open_at)
+    if (new Date() < openAt) {
+      return `Регистрация откроется ${openAt.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+    }
+  }
+  return null
 }
 
 
@@ -146,6 +160,7 @@ export default function RegistrationPage() {
   const [cancelled, setCancelled] = useState(false)
   const [competitions, setCompetitions] = useState<Competition[]>([])
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<number | null>(null)
+  const [directCompetition, setDirectCompetition] = useState<Competition | null>(null)
 
   const [fio, setFio] = useState('')
   const [gender, setGender] = useState('')
@@ -196,6 +211,10 @@ export default function RegistrationPage() {
         const open = list.filter(isRegistrationOpen)
         const best = pickBestCompetition(open)
         if (best) setSelectedCompetitionId(best.id)
+      }).catch(() => {})
+    } else {
+      competitionsApi.getById(Number(competitionId)).then((r) => {
+        setDirectCompetition(r.data as Competition)
       }).catch(() => {})
     }
   }, [competitionId])
@@ -362,7 +381,9 @@ export default function RegistrationPage() {
 
   const openCompetitions = competitions.filter(isRegistrationOpen)
   const selectedCompObj = competitions.find(c => c.id === selectedCompetitionId) ?? null
-  const showForm = competitionId ? true : selectedCompObj !== null && isRegistrationOpen(selectedCompObj)
+  const directCompIsOpen = directCompetition ? isRegistrationOpen(directCompetition) : null
+  const directCompNotOpenMsg = directCompetition ? registrationNotOpenYetMessage(directCompetition) : null
+  const showForm = competitionId ? (directCompIsOpen === true || directCompIsOpen === null) : selectedCompObj !== null && isRegistrationOpen(selectedCompObj)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -376,6 +397,18 @@ export default function RegistrationPage() {
         </Link>
       )}
       <h1 className="text-2xl font-bold mb-2 text-text">Регистрация участника</h1>
+
+      {competitionId && directCompetition && !directCompIsOpen && (
+        <div className="bg-surface-light rounded-xl border border-border p-8 text-center mb-6">
+          <Trophy className="w-12 h-12 mx-auto mb-3 text-text-muted" />
+          <p className="text-text font-semibold text-lg mb-1">
+            {directCompNotOpenMsg ?? 'Регистрация на это соревнование недоступна'}
+          </p>
+          {directCompNotOpenMsg && (
+            <p className="text-text-muted text-sm">Следите за обновлениями — регистрация откроется в ближайшее время.</p>
+          )}
+        </div>
+      )}
 
       {!competitionId && openCompetitions.length === 1 && selectedCompObj && (
         <div className="mb-6 bg-surface-light rounded-xl border border-border px-4 py-3">
