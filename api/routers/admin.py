@@ -52,6 +52,7 @@ class ParticipantCreate(BaseModel):
     city_name: str
     club_name: str
     coach_name: str
+    competition_id: Optional[int] = None
 
 
 class ParticipantUpdate(BaseModel):
@@ -167,6 +168,7 @@ def admin_create_participant(data: ParticipantCreate, admin: str = Depends(get_c
             "city_name": data.city_name,
             "club_name": data.club_name,
             "coach_name": data.coach_name,
+            "competition_id": data.competition_id,
         }
         status = save_participant_data(participant_data, tgid_who_added=0)
         update_cache()
