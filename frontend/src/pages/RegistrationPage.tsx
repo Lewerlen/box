@@ -408,11 +408,11 @@ export default function RegistrationPage() {
         </div>
       )}
 
-      {!competitionId && competitions.length > 0 && openCompetitions.length === 0 && (
+      {!competitionId && openCompetitions.length === 0 && (
         <div className="bg-surface-light rounded-xl border border-border p-8 text-center mb-6">
           <Trophy className="w-12 h-12 mx-auto mb-3 text-text-muted" />
-          <p className="text-text font-semibold text-lg mb-1">Нет открытых соревнований</p>
-          <p className="text-text-muted text-sm">На данный момент регистрация не открыта ни на одно соревнование. Следите за обновлениями.</p>
+          <p className="text-text font-semibold text-lg mb-1">На данный момент нет соревнований с открытой регистрацией</p>
+          <p className="text-text-muted text-sm">Следите за обновлениями — регистрация откроется в ближайшее время.</p>
         </div>
       )}
 
