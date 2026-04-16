@@ -112,8 +112,8 @@ def _check_registration_open(competition_id: int):
         if not row:
             raise HTTPException(status_code=404, detail="Соревнование не найдено")
         status, reg_closed, reg_deadline = row
-        if status == "finished":
-            raise HTTPException(status_code=403, detail="Регистрация закрыта: соревнование завершено")
+        if status != "active":
+            raise HTTPException(status_code=403, detail="Регистрация недоступна: соревнование не активно")
         if reg_closed:
             raise HTTPException(status_code=403, detail="Регистрация закрыта организатором")
         if reg_deadline and date.today() > reg_deadline:
