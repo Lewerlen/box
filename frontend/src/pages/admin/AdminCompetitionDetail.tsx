@@ -428,6 +428,8 @@ function ParticipantsTab({ competitionId }: { competitionId: number }) {
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ created?: number; updated?: number; errors: number; error_details?: string[] } | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
   const [classes, setClasses] = useState<RefItem[]>([])
   const [ranks, setRanks] = useState<RefItem[]>([])
 
@@ -479,6 +481,16 @@ function ParticipantsTab({ competitionId }: { competitionId: number }) {
     } catch {}
   }
 
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true)
+    try {
+      await adminApi.deleteParticipantsBulk(competitionId)
+      setBulkDeleteOpen(false)
+      load()
+    } catch {}
+    setBulkDeleting(false)
+  }
+
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -502,12 +514,48 @@ function ParticipantsTab({ competitionId }: { competitionId: number }) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-text-muted text-sm">Всего участников: {total}</p>
-        <label className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg text-sm font-medium cursor-pointer hover:bg-accent/20 transition-colors">
-          <Upload className="w-4 h-4" />
-          {csvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Импорт CSV'}
-          <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
-        </label>
+        <div className="flex items-center gap-2">
+          {total > 0 && (
+            <button
+              onClick={() => setBulkDeleteOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-danger/10 border border-danger/30 text-danger rounded-lg text-sm font-medium cursor-pointer hover:bg-danger/20 transition-colors"
+              title="Удалить всех участников этого соревнования"
+            >
+              <Trash2 className="w-4 h-4" />
+              Удалить всех
+            </button>
+          )}
+          <label className="flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 text-accent rounded-lg text-sm font-medium cursor-pointer hover:bg-accent/20 transition-colors">
+            <Upload className="w-4 h-4" />
+            {csvUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Импорт CSV'}
+            <input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
+          </label>
+        </div>
       </div>
+
+      {bulkDeleteOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-surface-light rounded-xl border border-border p-6 w-full max-w-md text-center">
+            <Trash2 className="w-12 h-12 text-danger mx-auto mb-3" />
+            <h3 className="text-lg font-semibold mb-2">Удалить всех участников?</h3>
+            <p className="text-text-muted text-sm mb-4">
+              Будут удалены <span className="font-semibold text-danger">{total}</span> участник(ов) этого соревнования.
+              <span className="block mt-2">Это действие нельзя отменить.</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleting}
+                className="flex-1 py-2 bg-surface border border-border rounded-lg text-text-secondary cursor-pointer disabled:opacity-50">
+                Отмена
+              </button>
+              <button onClick={handleBulkDelete} disabled={bulkDeleting}
+                className="flex-1 py-2 bg-danger text-white rounded-lg font-medium cursor-pointer border-none disabled:opacity-50 flex items-center justify-center gap-2">
+                {bulkDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Удалить всех
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {csvResult && (
         <div className={`rounded-lg px-4 py-3 mb-4 text-sm ${csvResult.errors === -1 ? 'bg-danger/10 border border-danger/30 text-danger' : 'bg-success/10 border border-success/30 text-success'}`}>

@@ -156,6 +156,7 @@ export const adminApi = {
   createParticipant: (data: RegistrationData) => api.post('/admin/participants', data),
   updateParticipant: (id: number, data: ParticipantUpdateData) => api.put(`/admin/participants/${id}`, data),
   deleteParticipant: (id: number) => api.delete(`/admin/participants/${id}`),
+  deleteParticipantsBulk: (competition_id: number) => api.delete('/admin/participants/bulk', { params: { competition_id } }),
   importCsv: (file: File, competition_id?: number) => {
     const formData = new FormData();
     formData.append('file', file);

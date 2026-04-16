@@ -1041,6 +1041,23 @@ def delete_participant_by_id(participant_id: int):
         if conn is not None:
             conn.close()
 
+def delete_participants_by_competition(competition_id: int) -> int:
+    """Удаляет всех участников указанного соревнования. Возвращает число удалённых записей."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM participant WHERE competition_id = %s", (competition_id,))
+            deleted = cur.rowcount
+            conn.commit()
+            return deleted
+    except (Exception, psycopg2.DatabaseError) as error:
+        conn.rollback()
+        print(f"Ошибка при массовом удалении участников: {error}")
+        raise
+    finally:
+        if conn is not None:
+            conn.close()
+
 def get_age_categories_with_participants():
     """Возвращает возрастные категории с количеством участников в каждой."""
     conn = get_db_connection()

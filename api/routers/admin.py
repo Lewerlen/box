@@ -13,6 +13,7 @@ from db.database import (
     save_participant_data,
     update_participant_by_id,
     delete_participant_by_id,
+    delete_participants_by_competition,
     get_all_participants_for_report,
     get_participants_for_approval,
     get_approved_statuses,
@@ -206,6 +207,19 @@ def admin_update_participant(participant_id: int, data: ParticipantUpdate, admin
         update_participant_by_id(participant_id, update_data, tgid_who_updated=0)
         update_cache()
         return {"status": "updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/participants/bulk")
+def admin_delete_participants_bulk(
+    competition_id: int = Query(..., description="ID соревнования (обязательно)"),
+    admin: str = Depends(get_current_admin),
+):
+    try:
+        deleted = delete_participants_by_competition(competition_id)
+        update_cache()
+        return {"status": "deleted", "deleted": deleted}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

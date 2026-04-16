@@ -59,6 +59,8 @@ export default function AdminParticipants() {
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ created?: number; updated?: number; errors: number; error_details?: string[] } | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
   const [classes, setClasses] = useState<RefItem[]>([])
   const [ranks, setRanks] = useState<RefItem[]>([])
 
@@ -132,6 +134,17 @@ export default function AdminParticipants() {
     } catch { }
   }
 
+  const handleBulkDelete = async () => {
+    if (!competitionId) return
+    setBulkDeleting(true)
+    try {
+      await adminApi.deleteParticipantsBulk(Number(competitionId))
+      setBulkDeleteOpen(false)
+      load()
+    } catch { }
+    setBulkDeleting(false)
+  }
+
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -163,6 +176,16 @@ export default function AdminParticipants() {
           <p className="text-text-muted text-sm mt-1">Всего: {total}</p>
         </div>
         <div className="flex items-center gap-2">
+          {competitionId && total > 0 && (
+            <button
+              onClick={() => setBulkDeleteOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-danger/10 border border-danger/30 text-danger rounded-lg text-sm font-medium cursor-pointer hover:bg-danger/20 transition-colors"
+              title="Удалить всех участников выбранного соревнования"
+            >
+              <Trash2 className="w-4 h-4" />
+              Удалить всех
+            </button>
+          )}
           <button
             onClick={handleDownloadExcel}
             className="flex items-center gap-2 px-4 py-2 bg-surface-light border border-border text-text-secondary rounded-lg text-sm font-medium cursor-pointer hover:bg-surface-lighter transition-colors"
@@ -284,6 +307,33 @@ export default function AdminParticipants() {
               <button onClick={() => setEditingId(null)} className="flex-1 py-2 bg-surface border border-border rounded-lg text-text-secondary cursor-pointer">Отмена</button>
               <button onClick={handleSave} disabled={saving} className="flex-1 py-2 bg-primary text-white rounded-lg font-medium cursor-pointer border-none disabled:opacity-50">
                 {saving ? 'Сохранение...' : 'Сохранить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bulkDeleteOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-surface-light rounded-xl border border-border p-6 w-full max-w-md text-center">
+            <Trash2 className="w-12 h-12 text-danger mx-auto mb-3" />
+            <h3 className="text-lg font-semibold mb-2">Удалить всех участников?</h3>
+            <p className="text-text-muted text-sm mb-4">
+              Будут удалены <span className="font-semibold text-danger">{total}</span> участник(ов) соревнования
+              <span className="block font-medium text-text mt-1">
+                «{competitions.find(c => String(c.id) === competitionId)?.name ?? ''}»
+              </span>
+              <span className="block mt-2">Это действие нельзя отменить.</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleting}
+                className="flex-1 py-2 bg-surface border border-border rounded-lg text-text-secondary cursor-pointer disabled:opacity-50">
+                Отмена
+              </button>
+              <button onClick={handleBulkDelete} disabled={bulkDeleting}
+                className="flex-1 py-2 bg-danger text-white rounded-lg font-medium cursor-pointer border-none disabled:opacity-50 flex items-center justify-center gap-2">
+                {bulkDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Удалить всех
               </button>
             </div>
           </div>
