@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useBlocker } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import api, { competitionsApi } from '../../api'
 import { Plus, Pencil, Trash2, Loader2, X, Check, Lock, Unlock, Settings } from 'lucide-react'
 
@@ -82,11 +82,6 @@ export default function AdminCompetitions() {
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
-
-  useBlocker(() => {
-    if (!isDirty) return false
-    return !window.confirm('Есть несохранённые изменения. Закрыть без сохранения?')
-  })
 
   const load = () => {
     api.get('/admin/competitions')
