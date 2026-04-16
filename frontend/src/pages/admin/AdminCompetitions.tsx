@@ -156,13 +156,15 @@ export default function AdminCompetitions() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-text">Соревнования</h1>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-dark text-white rounded-lg text-sm font-medium transition-colors cursor-pointer border-none"
-        >
-          <Plus className="w-4 h-4" />
-          Добавить
-        </button>
+        {!showForm && (
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-dark text-white rounded-lg text-sm font-medium transition-colors cursor-pointer border-none"
+          >
+            <Plus className="w-4 h-4" />
+            Добавить
+          </button>
+        )}
       </div>
 
       {showForm && (
