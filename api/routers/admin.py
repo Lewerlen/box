@@ -121,7 +121,9 @@ def admin_list_participants(
             p.rank_title,
             p.weight_category_id,
             p.age_category_id,
-            p.class_id
+            p.class_id,
+            p.competition_id,
+            comp.name as competition_name
         FROM participant p
         LEFT JOIN age_category ac ON p.age_category_id = ac.id
         LEFT JOIN weight_category wc ON p.weight_category_id = wc.id
@@ -130,6 +132,7 @@ def admin_list_participants(
         LEFT JOIN city ci ON p.city_id = ci.id
         LEFT JOIN club cl ON p.club_id = cl.id
         LEFT JOIN coach co ON p.coach_id = co.id
+        LEFT JOIN competitions comp ON p.competition_id = comp.id
         {where_sql}
         ORDER BY p.id DESC
         LIMIT %s OFFSET %s
@@ -139,7 +142,8 @@ def admin_list_participants(
         "id", "fio", "gender", "dob", "age_category_name",
         "weight", "class_name", "region_name", "city_name",
         "club_name", "coach_name", "rank_title",
-        "weight_category_id", "age_category_id", "class_id"
+        "weight_category_id", "age_category_id", "class_id",
+        "competition_id", "competition_name"
     ]
     participants = []
     for row in cur.fetchall():

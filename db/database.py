@@ -23,7 +23,18 @@ def get_db_connection():
     return conn
 
 def migrate_participant_table(cur):
-    """Добавляет недостающие колонки в таблицу participant."""
+    """
+    Мигрирует таблицу participant для поддержки мультисоревновательной регистрации.
+
+    Выполняемые шаги:
+    1. Добавляет колонку competition_id (если отсутствует), чтобы каждая запись
+       участника была привязана к конкретному соревнованию.
+    2. Заменяет устаревшее ограничение UNIQUE(fio, dob) на
+       UNIQUE NULLS NOT DISTINCT(fio, dob, competition_id), позволяя одному
+       спортсмену регистрироваться в нескольких соревнованиях без конфликтов.
+       Если старое ограничение отсутствует (например, в новой БД без него),
+       новое добавляется напрямую при необходимости.
+    """
     try:
         cur.execute("""
             SELECT column_name 
@@ -42,11 +53,16 @@ def migrate_participant_table(cur):
         cur.execute("""
             SELECT constraint_name FROM information_schema.table_constraints
             WHERE table_name = 'participant' AND constraint_type = 'UNIQUE'
-              AND constraint_name = 'participant_fio_dob_key'
+              AND constraint_name IN ('participant_fio_dob_key', 'participant_fio_dob_competition_unique')
         """)
-        if cur.fetchone():
+        existing_unique_constraints = {row[0] for row in cur.fetchall()}
+
+        if 'participant_fio_dob_key' in existing_unique_constraints:
             print("  -> Обновление уникального ограничения participant: (fio, dob) -> (fio, dob, competition_id)...")
             cur.execute("ALTER TABLE participant DROP CONSTRAINT participant_fio_dob_key")
+
+        if 'participant_fio_dob_competition_unique' not in existing_unique_constraints:
+            print("  -> Добавление ограничения participant_fio_dob_competition_unique...")
             cur.execute("""
                 ALTER TABLE participant
                 ADD CONSTRAINT participant_fio_dob_competition_unique
@@ -253,8 +269,7 @@ def create_tables():
             added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
             added_by BIGINT,
             updated_at TIMESTAMP WITH TIME ZONE,
-            updated_by BIGINT,
-            UNIQUE (fio, dob)
+            updated_by BIGINT
         );
         """,
         """
@@ -384,8 +399,13 @@ def create_tables():
 
 def save_participant_data(participant_data: dict, tgid_who_added: int) -> str:
     """
-    Сохраняет данные участника. Если участник с таким ФИО и датой рождения
-    существует, обновляет его данные. В противном случае, создает новую запись.
+    Сохраняет данные участника с учётом поддержки мультисоревновательной регистрации.
+
+    Один спортсмен (одинаковые fio + dob) может участвовать в нескольких
+    соревнованиях: для каждой комбинации (fio, dob, competition_id) создаётся
+    отдельная запись. Обновление выполняется только при повторной регистрации
+    в том же соревновании.
+
     Также обрабатывает "найти или создать" для связанных сущностей (регион, город и т.д.).
     """
     conn = get_db_connection()

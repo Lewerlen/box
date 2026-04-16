@@ -16,6 +16,8 @@ interface Participant {
   club_name: string
   coach_name: string
   rank_title: string
+  competition_id: number | null
+  competition_name: string | null
 }
 
 interface RefItem {
@@ -305,14 +307,15 @@ export default function AdminParticipants() {
                 <th className="px-4 py-3 text-text-muted font-medium">Вес</th>
                 <th className="px-4 py-3 text-text-muted font-medium hidden lg:table-cell">Класс</th>
                 <th className="px-4 py-3 text-text-muted font-medium hidden lg:table-cell">Клуб</th>
+                <th className="px-4 py-3 text-text-muted font-medium hidden xl:table-cell">Соревнование</th>
                 <th className="px-4 py-3 text-text-muted font-medium w-24">Действия</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="px-4 py-12 text-center text-text-muted">Загрузка...</td></tr>
+                <tr><td colSpan={9} className="px-4 py-12 text-center text-text-muted">Загрузка...</td></tr>
               ) : participants.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-12 text-center text-text-muted">Участники не найдены</td></tr>
+                <tr><td colSpan={9} className="px-4 py-12 text-center text-text-muted">Участники не найдены</td></tr>
               ) : (
                 participants.map((p) => (
                   <tr key={p.id} className="border-b border-border/50 hover:bg-surface-lighter/30 transition-colors">
@@ -327,6 +330,12 @@ export default function AdminParticipants() {
                     <td className="px-4 py-3 text-text-secondary">{p.weight}</td>
                     <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">{p.class_name}</td>
                     <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">{p.club_name}</td>
+                    <td className="px-4 py-3 text-text-secondary hidden xl:table-cell">
+                      {p.competition_name
+                        ? <span className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent">{p.competition_name}</span>
+                        : <span className="text-text-muted text-xs">—</span>
+                      }
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <button onClick={() => handleEdit(p)} className="p-1.5 rounded hover:bg-surface-lighter text-text-muted hover:text-accent cursor-pointer bg-transparent border-none transition-colors">
