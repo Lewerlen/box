@@ -182,7 +182,14 @@ export default function BracketsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {grouped.map(([group, items]) => (
+          {grouped.map(([group, items]) => {
+            const groupHasSelected = selected && items.some(c =>
+              c.class_name === selected.class_name &&
+              c.gender === selected.gender &&
+              c.age_category_name === selected.age_category_name &&
+              c.weight_name === selected.weight_name
+            )
+            return (
             <div key={group} className="bg-surface-light rounded-xl border border-border overflow-hidden">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <h3 className="font-semibold text-text">{group}</h3>
@@ -198,9 +205,12 @@ export default function BracketsPage() {
                   return (
                     <button
                       key={i}
-                      onClick={() => c.approved && setSelected(c)}
+                      onClick={() => {
+                        if (!c.approved) return
+                        setSelected(isSelected ? null : c)
+                      }}
                       disabled={!c.approved}
-                      title={c.approved ? 'Открыть сетку' : 'Сетка ещё не утверждена администратором'}
+                      title={c.approved ? (isSelected ? 'Скрыть сетку' : 'Открыть сетку') : 'Сетка ещё не утверждена администратором'}
                       className={`text-left px-3 py-3 rounded-lg border transition-all bg-surface ${
                         c.approved
                           ? 'cursor-pointer hover:border-primary/50 hover:bg-primary/5'
@@ -235,60 +245,57 @@ export default function BracketsPage() {
                   )
                 })}
               </div>
+              {groupHasSelected && selected && (
+                <div className="border-t border-border bg-surface/40">
+                  <div className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-3 justify-between">
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold">
+                        {selected.class_name.charAt(0)}
+                      </span>
+                      <h2 className="text-base font-semibold text-text">{selected.class_name}</h2>
+                      <span className="text-xs text-text-muted">·</span>
+                      <span className="text-sm text-text-muted">{selected.gender}</span>
+                      <span className="text-xs text-text-muted">·</span>
+                      <span className="text-sm text-text-muted">{selected.age_category_name}</span>
+                      <span className="text-xs text-text-muted">·</span>
+                      <span className="text-sm text-text-muted">{selected.weight_name}</span>
+                      <span className="inline-flex items-center gap-1 text-xs text-text-muted ml-2">
+                        <Users className="w-3.5 h-3.5" /> {selected.participant_count}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setZoom(true)}
+                        className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text cursor-pointer bg-transparent border-none"
+                        title="На весь экран"
+                      >
+                        <Maximize2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setSelected(null)}
+                        className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text cursor-pointer bg-transparent border-none"
+                      >
+                        <X className="w-4 h-4" /> Закрыть
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-4 overflow-x-auto bg-surface">
+                    <img
+                      src={publicApi.getBracketImage({
+                        class_name: selected.class_name,
+                        gender: selected.gender,
+                        age_category_name: selected.age_category_name,
+                        weight_name: selected.weight_name,
+                        competition_id: effectiveCompId,
+                      })}
+                      alt="Турнирная сетка"
+                      className="max-w-full mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      )}
-
-      {selected && (
-        <div className="mt-8 bg-surface-light rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-3 justify-between">
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold">
-                {selected.class_name.charAt(0)}
-              </span>
-              <h2 className="text-base font-semibold text-text">
-                {selected.class_name}
-              </h2>
-              <span className="text-xs text-text-muted">·</span>
-              <span className="text-sm text-text-muted">{selected.gender}</span>
-              <span className="text-xs text-text-muted">·</span>
-              <span className="text-sm text-text-muted">{selected.age_category_name}</span>
-              <span className="text-xs text-text-muted">·</span>
-              <span className="text-sm text-text-muted">{selected.weight_name}</span>
-              <span className="inline-flex items-center gap-1 text-xs text-text-muted ml-2">
-                <Users className="w-3.5 h-3.5" /> {selected.participant_count}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setZoom(true)}
-                className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text cursor-pointer bg-transparent border-none"
-                title="На весь экран"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setSelected(null)}
-                className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text cursor-pointer bg-transparent border-none"
-              >
-                <X className="w-4 h-4" /> Закрыть
-              </button>
-            </div>
-          </div>
-          <div className="p-4 overflow-x-auto bg-surface">
-            <img
-              src={publicApi.getBracketImage({
-                class_name: selected.class_name,
-                gender: selected.gender,
-                age_category_name: selected.age_category_name,
-                weight_name: selected.weight_name,
-                competition_id: effectiveCompId,
-              })}
-              alt="Турнирная сетка"
-              className="max-w-full mx-auto"
-            />
-          </div>
+          )})}
         </div>
       )}
 
