@@ -251,24 +251,41 @@ export default function RegistrationPage() {
     if (step === 13 && clubId) registrationApi.getCoaches(clubId).then((r) => setCoaches(r.data))
   }, [step, ageCategoryId, regionId, cityId, clubId])
 
+  useEffect(() => {
+    if (step !== 3 || !gender) return
+    const iso = `${dobYear}-${String(dobMonth).padStart(2, '0')}-${String(dobDay).padStart(2, '0')}`
+    let cancelled = false
+    registrationApi
+      .determineAgeCategory(iso, gender)
+      .then((res) => {
+        if (cancelled) return
+        setAgeCategoryId(res.data.age_category.id)
+        setAgeCategoryName(res.data.age_category.name)
+        setError('')
+      })
+      .catch(() => {
+        if (cancelled) return
+        setAgeCategoryId(null)
+        setAgeCategoryName('')
+      })
+    return () => { cancelled = true }
+  }, [step, gender, dobDay, dobMonth, dobYear])
+
   const handleDobSubmit = async () => {
     const iso = `${dobYear}-${String(dobMonth).padStart(2, '0')}-${String(dobDay).padStart(2, '0')}`
     const display = `${String(dobDay).padStart(2, '0')}.${String(dobMonth).padStart(2, '0')}.${dobYear}`
     setDobIso(iso)
     setDobDisplay(display)
     if (!gender) { setError('Пол не выбран'); return }
-    try {
-      const res = await registrationApi.determineAgeCategory(iso, gender)
-      setAgeCategoryId(res.data.age_category.id)
-      setAgeCategoryName(res.data.age_category.name)
-      setError('')
-      const next = new Set(skippedSteps)
-      next.add(4)
-      setSkippedSteps(next)
-      setStep(5)
-    } catch {
+    if (!ageCategoryId) {
       setError('Не удалось определить возрастную категорию для данной даты рождения')
+      return
     }
+    setError('')
+    const next = new Set(skippedSteps)
+    next.add(4)
+    setSkippedSteps(next)
+    setStep(5)
   }
 
   const handleRankDateSubmit = () => {
