@@ -51,7 +51,11 @@ export default function AdminReferences() {
       else if (level === 1) res = await adminApi.getRefCities(parentId!)
       else if (level === 2) res = await adminApi.getRefClubs(parentId!)
       else res = await adminApi.getRefCoaches(parentId!)
-      setItems(res.data)
+      const sorted = [...res.data].sort((a: RefEntry, b: RefEntry) => {
+        if (b.count !== a.count) return b.count - a.count
+        return a.name.localeCompare(b.name, 'ru')
+      })
+      setItems(sorted)
     } catch {
       setError('Ошибка загрузки')
     }
