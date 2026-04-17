@@ -148,6 +148,26 @@ def main():
         # fallback
         valid_cities = [c[0] for c in cities]
 
+    # группируем валидные города по регионам, чтобы распределить участников по регионам
+    cities_by_region: dict[int, list[int]] = {}
+    for cid in valid_cities:
+        cities_by_region.setdefault(city_by_id[cid], []).append(cid)
+
+    # веса регионов: домашняя Башкирия — большинство, остальные — гости
+    region_weights = {
+        1: 60,   # Башкортостан
+        3: 10,   # Удмуртия
+        4: 12,   # Оренбургская
+        5: 10,   # Самарская
+        6: 8,    # Ульяновская
+    }
+    region_pool: list[int] = []
+    for rid, w in region_weights.items():
+        if cities_by_region.get(rid):
+            region_pool.extend([rid] * w)
+    if not region_pool:
+        region_pool = list(cities_by_region.keys())
+
     # age category names for DOB
     cur.execute("SELECT id, name FROM age_category")
     age_name_by_id = {row[0]: row[1] for row in cur.fetchall()}
@@ -160,9 +180,9 @@ def main():
             fio = gen_fio(gender)
             dob = random_dob(amin, amax)
 
-            # pick city -> club -> coach
-            city_id = random.choice(valid_cities)
-            region_id = city_by_id[city_id]
+            # pick region -> city -> club -> coach
+            region_id = random.choice(region_pool)
+            city_id = random.choice(cities_by_region[region_id])
             club_pool = [cl for cl in clubs_by_city.get(city_id, []) if coaches_by_club.get(cl)]
             if not club_pool:
                 club_pool = clubs_by_city.get(city_id, [None])
