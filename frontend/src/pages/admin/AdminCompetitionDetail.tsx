@@ -689,7 +689,18 @@ function ParticipantsTab({ competitionId }: { competitionId: number }) {
                     </td>
                     <td className="px-4 py-3 text-text-secondary hidden md:table-cell">{p.age_category_name}</td>
                     <td className="px-4 py-3 text-text-secondary">{p.weight}</td>
-                    <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">{p.class_name}</td>
+                    <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">
+                      {p.class_name ? (
+                        <span
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-semibold"
+                          title={p.class_name}
+                        >
+                          {p.class_name.trim().charAt(0)}
+                        </span>
+                      ) : (
+                        <span className="text-text-muted text-xs">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">{p.club_name}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">

@@ -387,11 +387,29 @@ export default function AdminParticipants() {
                     </td>
                     <td className="px-4 py-3 text-text-secondary hidden md:table-cell">{p.age_category_name}</td>
                     <td className="px-4 py-3 text-text-secondary">{p.weight}</td>
-                    <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">{p.class_name}</td>
+                    <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">
+                      {p.class_name ? (
+                        <span
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-semibold"
+                          title={p.class_name}
+                        >
+                          {p.class_name.trim().charAt(0)}
+                        </span>
+                      ) : (
+                        <span className="text-text-muted text-xs">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">{p.club_name}</td>
                     <td className="px-4 py-3 text-text-secondary hidden xl:table-cell">
                       {p.competition_name
-                        ? <span className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent">{p.competition_name}</span>
+                        ? (
+                          <span
+                            className="inline-block max-w-[180px] truncate align-middle text-xs px-2 py-1 rounded-full bg-accent/10 text-accent whitespace-nowrap"
+                            title={p.competition_name}
+                          >
+                            {p.competition_name}
+                          </span>
+                        )
                         : <span className="text-text-muted text-xs">—</span>
                       }
                     </td>
