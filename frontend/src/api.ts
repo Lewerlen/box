@@ -91,6 +91,7 @@ export const publicApi = {
   getClubs: (cityId?: number) => api.get('/public/references/clubs', { params: cityId ? { city_id: cityId } : {} }),
   getCoaches: (clubId: number) => api.get('/public/references/coaches', { params: { club_id: clubId } }),
   getApprovedBrackets: (competition_id?: number) => api.get('/public/brackets/approved', { params: competition_id !== undefined ? { competition_id } : {} }),
+  getBracketCategories: (competition_id?: number) => api.get('/public/brackets/categories', { params: competition_id !== undefined ? { competition_id } : {} }),
   getSchedule: (competition_id: number) => api.get(`/public/competitions/${competition_id}/schedule`),
   getBracketImage: (params: { class_name: string; gender: string; age_category_name: string; weight_name: string; competition_id?: number }) => {
     const p: Record<string, string> = {

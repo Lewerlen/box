@@ -3,12 +3,15 @@ from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import FileResponse
 from typing import Optional
 
+from collections import defaultdict
+
 from db.database import (
     get_db_connection,
     get_participant_by_id,
     get_participants_for_bracket,
     get_approved_statuses,
     get_custom_bracket_order,
+    get_participants_for_approval,
 )
 from db.cache import (
     get_age_categories_from_cache,
@@ -181,6 +184,36 @@ def get_clubs(city_id: Optional[int] = None):
 @router.get("/references/coaches")
 def get_coaches(club_id: int):
     return get_coaches_from_cache(club_id)
+
+
+@router.get("/brackets/categories")
+def get_public_bracket_categories(competition_id: Optional[int] = None):
+    """All categories with at least one participant, plus approval flag and counts."""
+    participants = get_participants_for_approval(competition_id=competition_id)
+    approved_statuses = get_approved_statuses(competition_id=competition_id)
+
+    grouped = defaultdict(list)
+    for p in participants:
+        key = (
+            p.get("class_name", ""),
+            p.get("gender", ""),
+            p.get("age_category_name", ""),
+            format_weight(p.get("weight")),
+        )
+        grouped[key].append(p)
+
+    result = []
+    for key, parts in grouped.items():
+        class_name, gender, age_cat_name, weight_name = key
+        result.append({
+            "class_name": class_name,
+            "gender": gender,
+            "age_category_name": age_cat_name,
+            "weight_name": weight_name,
+            "participant_count": len(parts),
+            "approved": key in approved_statuses,
+        })
+    return result
 
 
 @router.get("/brackets/approved")
